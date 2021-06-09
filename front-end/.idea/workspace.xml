@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="802c16bf-a676-485b-a1d0-e814e64f8c44" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/data/X_train.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/data/X_train.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/data/label_train.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/data/label_train.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/data_preparation.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/data_preparation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/model_detect.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/model_detect.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/test.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/test.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/utils_pro/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/utils_pro/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/checkin/utils_pro/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/checkin/utils_pro/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/stream/api_camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/stream/api_camera.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/stream/rtsp_tcp_daemon.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/stream/rtsp_tcp_daemon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/stream/socketio_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/stream/socketio_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/api/v1/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/api/v1/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/app/enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/cr7/Ronaldo-is-proud-of-Cristiano-Ronaldo-Junior-356x220.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/cr7/download.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/cr7/images.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/cr7/maxresdefault.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/ha_thanh/hathanh1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/ha_thanh/hathanh2.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/ha_thanh/hathanh3.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/ha_thanh/hathanh4.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/phan_thong/thong1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/phan_thong/thong2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/phan_thong/thong3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/app/template/image/camera/phan_thong/thong4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/template/camera/here.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/camera.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/camera.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assets/styles/main.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/styles/main.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Pagination/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Pagination/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/modules/camera.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/modules/camera.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/dashboard/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/dashboard/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/login/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/login/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/table/camera.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/table/camera.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/../test.mp4" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="1ssBCYOzkzCWXNEp40dCe9ncB5v" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="802c16bf-a676-485b-a1d0-e814e64f8c44" name="Default Changelist" comment="" />
+      <created>1621651290703</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1621651290703</updated>
+    </task>
+    <servers />
+  </component>
+</project>
