@@ -10,7 +10,7 @@ from flask_jwt_extended import (
                     get_jwt_claims,
                     get_jwt_identity)
 import sys
-sys.path.append("/home/ducdv10/Documents/do_an/backend/")
+sys.path.append("/home/ducdv10/Downloads/do_an_end/backend/")
 from app.utils import notification
 import logging
 import pickle
@@ -63,7 +63,7 @@ def backend_to_model_stack_frame(client, user, message):
             scores = []
             str_date = datetime.now().strftime("%Y_%m_%d") 
 
-            path_save = "/home/ducdv10/Documents/do_an/backend/app/template/image/camera/{}".format(str_date)
+            path_save = "/home/ducdv10/Downloads/do_an_end/backend/app/template/image/camera/{}".format(str_date)
             if not os.path.isdir(path_save):
                 os.makedirs(path_save)
 
@@ -138,7 +138,7 @@ def backend_to_model_stack_frame(client, user, message):
             if stack_dict:
                 name_folder = flag_dict
                 str_date = datetime.now().strftime("%Y_%m_%d") 
-                path_save = "/home/ducdv10/Documents/do_an/backend/app/template/image/training/{}/{}".format(str_date,name_folder)
+                path_save = "/home/ducdv10/Downloads/do_an_end/backend/app/template/image/training/{}/{}".format(str_date,name_folder)
                 if not os.path.isdir(path_save):
                     os.makedirs(path_save)
                     

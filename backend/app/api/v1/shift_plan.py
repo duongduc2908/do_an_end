@@ -33,8 +33,8 @@ def post():
         ObjectType = json_data.get('ObjectType')
         OrganizationUnitIDs = json_data.get('OrganizationUnitIDs', None)
         OrganizationUnitName = json_data.get('OrganizationUnitName', None)
-        user_id = json_data.get('user_id', None)
-        user_fullname = json_data.get('user_fullname', None)
+        EmployeeIDs = json_data.get('EmployeeIDs', None)
+        EmployeeNames = json_data.get('EmployeeNames', None)
 
     except Exception as ex:
         print(ex)
@@ -54,8 +54,8 @@ def post():
         'ObjectType': ObjectType,
         'OrganizationUnitIDs': OrganizationUnitIDs,
         'OrganizationUnitName': OrganizationUnitName,
-        'user_id': user_id,
-        'user_fullname': user_fullname,
+        'EmployeeIDs': EmployeeIDs,
+        'EmployeeNames': EmployeeNames,
         'ModifiedDate': "",
         'ModifiedBy':'',
         'CreateDate': datetime.today(),
@@ -63,7 +63,7 @@ def post():
     }
     try:
         client.db.shift_plan.insert_one(shift_plan)
-        notif = notification(content=claims['full_name']+" đã thêm ca lam viec " + WorkingShiftNames + " thành công", user_id=user_curr_id, type=CREATE)
+        notif = notification(content=claims['full_name']+" đã thêm ca lam viec " + ShiftPlanName + " thành công", user_id=user_curr_id, type=CREATE)
         client.db.history.insert_one(notif)
     except Exception as ex:
         print(ex)
@@ -93,10 +93,8 @@ def put():
         ObjectType = json_data.get('ObjectType')
         OrganizationUnitIDs = json_data.get('OrganizationUnitIDs', None)
         OrganizationUnitName = json_data.get('OrganizationUnitName', None)
-        user_id = json_data.get('user_id', None)
-        user_fullname = json_data.get('user_fullname', None)
-        CreateDate = json_data.get('CreateDate', None)
-        CreateBy = json_data.get('CreateBy', None)
+        EmployeeIDs = json_data.get('EmployeeIDs', None)
+        EmployeeNames = json_data.get('EmployeeNames', None)
 
     except Exception as e:
         print(e)
@@ -118,16 +116,16 @@ def put():
             'ObjectType': ObjectType,
             'OrganizationUnitIDs': OrganizationUnitIDs,
             'OrganizationUnitName': OrganizationUnitName,
-            'user_id': user_id,
-            'user_fullname': user_fullname,
-            'CreateDate': CreateDate,
-            'CreateBy': CreateBy,
+            'EmployeeIDs': EmployeeIDs,
+            'EmployeeNames': EmployeeNames,
+            'CreateDate': shift_plan["CreateDate"],
+            'CreateBy': shift_plan["CreateBy"],
             'ModifiedDate': datetime.today(),
             'ModifiedBy': claims['full_name']
         }}
     try:
         client.db.shift_plan.update_one({'_id': Shift_plan_id}, new_shift_plan)
-        notif = notification(content=claims['full_name']+" đã sửa ca lam viec " + ShiftPlanName + " thành công", user_id=user_curr_id, type=UPDATE)
+        notif = notification(content=claims['full_name']+" đã sửa phan ca lam viec " + ShiftPlanName + " thành công", user_id=user_curr_id, type=UPDATE)
         client.db.history.insert_one(notif)
     except Exception as ex:
         print(ex)
@@ -176,7 +174,7 @@ Output: Success / Error Message
 def get_all_page_search():
     page_size = request.args.get('page_size', None)
     page_number = request.args.get('page_number', None)
-    query_filter = request.args.get('query_filter', '')
+    query_filter = request.args.get('query_filter', '{"$and":[]}')
     if page_size and page_number:
         skips = int(page_size) * (int(page_number)-1)
     else:
@@ -198,9 +196,9 @@ def get_all_page_search():
         
     totals = shift_plans.count()
     if skips:
-        shift_plan = shift_plans.skip(skips).limit(int(page_size))
+        shift_plans = shift_plans.skip(skips).limit(int(page_size))
     '''end list'''
-    list_shift_plan = list(shift_plan)
+    list_shift_plan = list(shift_plans)
     '''Make a request'''
     data = {
         'totals': totals,

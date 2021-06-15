@@ -241,6 +241,7 @@ $cursor: #fff;
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
+    background-image: url(http://localhost:4321/image/background.jpg);
     border-radius: 5px;
     color: #454545;
   }
@@ -256,7 +257,10 @@ $light_gray:#eee;
   min-height: 100%;
   width: 100%;
   background-color: $bg;
+  background-image: url(http://localhost:4321/image/background.jpg);
   overflow: hidden;
+  background-size: cover;
+
 
   .login-form {
     position: relative;
@@ -265,6 +269,7 @@ $light_gray:#eee;
     padding: 160px 35px 0;
     margin: 0 auto;
     overflow: hidden;
+    
   }
 
   .tips {

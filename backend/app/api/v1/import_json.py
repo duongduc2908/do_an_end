@@ -11,7 +11,7 @@ api = Blueprint('import_json', __name__)
 @jwt_required
 def read_file_json():
     try:
-        with open('/home/ducdv10/Documents/do_an/backend/ok.json', encoding="utf8") as f:
+        with open('/home/ducdv10/Downloads/do_an_end/backend/ok.json', encoding="utf8") as f:
             list_data = json.load(f)
     except Exception as ex:
         print(ex)

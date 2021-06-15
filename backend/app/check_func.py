@@ -30,7 +30,10 @@ def check_shift_plan():
                 "users":list_users,
                 "RepeatType":shift_plan["RepeatType"],
                 "WorkingShiftIDs":shift_plan["WorkingShiftIDs"],
-                "WorkingShiftNames":shift_plan["WorkingShiftNames"]
+                "WorkingShiftNames":shift_plan["WorkingShiftNames"],
+                "FromDate":shift_plan["FromDate"],
+                "ToDate":shift_plan["ToDate"],
+                "DateApplyType":shift_plan["DateApplyType"]
 
             }
             res.append(item)

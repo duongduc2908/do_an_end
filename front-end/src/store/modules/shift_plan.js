@@ -14,6 +14,17 @@ const actions = {
       })
     })
 
+  },
+  async addShiftPlan (context, payload) {
+    return new Promise((resolve, reject) => {
+      addShiftPlan(payload).then(response => {
+        const { data } = response
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+
   }
 }
 

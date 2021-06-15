@@ -93,7 +93,7 @@ def upload_train():
         if i == 0:
             str_date = datetime.datetime.now().strftime("%Y_%m_%d") 
             name_folder = request.args.get("MaNV")
-            path_dich = "/home/ducdv10/Documents/do_an/backend/app/template/image/training/{}/{}".format(str_date,name_folder)
+            path_dich = "/home/ducdv10/Downloads/do_an_end/backend/app/template/image/training/{}/{}".format(str_date,name_folder)
             if not os.path.isdir(path_dich):
                 os.makedirs(path_dich)
         img_save = secure_filename(file.filename)

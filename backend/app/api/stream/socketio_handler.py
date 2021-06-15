@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import socketio
 from datetime import datetime
 import sys
-sys.path.append("/home/ducdv10/Documents/do_an/backend/")
+sys.path.append("/home/ducdv10/Downloads/do_an_end/backend/")
 import json
 from app.config import DroneDetectionConfig as cf
 from app.extensions import load_bytes_from_redis, load_frame_from_redis

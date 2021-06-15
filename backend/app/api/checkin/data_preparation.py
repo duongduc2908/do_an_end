@@ -14,13 +14,13 @@ face_vector = FaceVector()
 BLACK = [0, 0, 0]
 
 
-imagePaths = list(paths.list_images('/home/ducdv10/Documents/do_an/backend/app/template/image/train'))
+imagePaths = list(paths.list_images('/home/ducdv10/Downloads/do_an_end/backend/app/template/image/train'))
 X = []
 labels = []
-# if os.path.isfile("data/X_train.pkl"):
-# 	X = pickle.load(open("data/X_train.pkl", 'rb'))
-# if os.path.isfile("data/label_train.pkl"):
-#     labels = pickle.load(open("data/label_train.pkl", 'rb'))
+if os.path.isfile("data/X_train.pkl"):
+	X = pickle.load(open("data/X_train.pkl", 'rb'))
+if os.path.isfile("data/label_train.pkl"):
+    labels = pickle.load(open("data/label_train.pkl", 'rb'))
 
 for imagePath in imagePaths:
 	label = imagePath.split(os.path.sep)[-2]
@@ -30,7 +30,7 @@ for imagePath in imagePaths:
 	bbs, points = detect_face(image)
 	if len(bbs)>0:
 		t0 = time.time()
-		emb=face_vector.get_vector(image, bbs[0])		
+		emb=face_vector.get_vector(image, bbs[0],points)		
 		print('Embeding:',time.time() - t0)
 		labels.append(label)
 		X.append(emb)

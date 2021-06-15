@@ -2,7 +2,7 @@ import paho.mqtt.client as mqttClient
 import time
 import cv2
 import sys
-sys.path.append("/home/ducdv10/Documents/do_an/backend/")
+sys.path.append("/home/ducdv10/Downloads/do_an_end/backend/")
 from app.config import DroneDetectionConfig as cf
 from app.extensions import save_stack_to_redis, \
                 save_frame_to_redis, set_key,stack_frames,red

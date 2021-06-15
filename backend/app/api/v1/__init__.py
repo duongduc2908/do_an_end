@@ -11,3 +11,4 @@ from app.api.v1 import organization_unit
 from app.api.v1 import role_permission
 from app.api.v1 import working_shift
 from app.api.v1 import shift_plan
+from app.api.v1 import shift_plan_employee

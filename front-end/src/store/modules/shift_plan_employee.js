@@ -1,12 +1,12 @@
 
-import {getWorkingShift} from '@/api/working_shift'
+import { addShiftPlanEmployee} from '@/api/shift_plan_employee'
 
 const mutations = {
 }
 const actions = {
-  async getWorkingShift (context, payload) {
+  async addShiftPlanEmployee (context, payload) {
     return new Promise((resolve, reject) => {
-        getWorkingShift(payload).then(response => {
+        addShiftPlanEmployee(payload).then(response => {
         const { data } = response
         resolve(data)
       }).catch(error => {

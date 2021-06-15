@@ -258,7 +258,12 @@
               <el-input v-model="temp.email" />
             </el-form-item>
             <el-form-item label="Mobile " prop="Mobile">
-              <el-input v-model="temp.Mobile" type="tel" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==10) return false;" />
+              <el-input
+                v-model="temp.Mobile"
+                type="tel"
+                pattern="/^-?\d+\.?\d*$/"
+                onKeyPress="if(this.value.length==10) return false;"
+              />
             </el-form-item>
             <el-form-item label="Ngay phep " prop="NumberOfLeaveDay">
               <el-input v-model="temp.NumberOfLeaveDay" />

@@ -7,3 +7,11 @@ export function getShiftPlan(param) {
     params:param
   })
 }
+
+export function addShiftPlan(param) {
+  return request({
+    url: '/shift_plan/create',
+    method: 'post',
+    data:param
+  })
+}

@@ -100,3 +100,8 @@ html,body,span,a{
 .cursor{
   cursor: pointer;
 }
+
+.disable{
+  pointer-events: none;
+  opacity: .3;
+}

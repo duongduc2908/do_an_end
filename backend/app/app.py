@@ -167,13 +167,16 @@ def register_blueprints(app):
     app.register_blueprint(api_v1.role_permission.api, url_prefix='/api/v1/role_permission')
     app.register_blueprint(api_v1.working_shift.api, url_prefix='/api/v1/working_shift')
     app.register_blueprint(api_v1.shift_plan.api, url_prefix='/api/v1/shift_plan')
+    app.register_blueprint(api_v1.shift_plan_employee.api, url_prefix='/api/v1/shift_plan_employee')
 
 
 @socketio.on('connect')
 def connect():
     scheduler.remove_all_jobs()
     # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='cron',day=10,month=6,year=2021,hour=2, minute=9, replace_existing=True,timezone='UTC')
-    scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='cron',hour=2,minute="37-40")
+    # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='cron',day="*",day_of_week="0-4",hour="6")
+    # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='interval',seconds=5)
+
 
     @socketio.on('new_frame_event')
     def send_new_frame(message):

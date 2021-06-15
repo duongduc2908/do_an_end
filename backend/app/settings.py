@@ -67,7 +67,7 @@ class DevConfig(Config):
     connected = MongoClient(host="mongodb://127.0.0.1",port=27017,connect=False)
     #APScheduler
     SCHEDULER_JOBSTORES = {
-        "default": MongoDBJobStore(client=connected)
+        "default": MongoDBJobStore(client=connected,database="cham_cong")
     }
     SCHEDULER_API_ENABLED = True
     SCHEDULER_EXECUTORS={

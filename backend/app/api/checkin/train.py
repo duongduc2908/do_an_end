@@ -21,9 +21,13 @@ def train_model(client, user, message):
     BLACK = [0, 0, 0]
 
     str_date = datetime.now().strftime("%Y_%m_%d") 
-    imagePaths = list(paths.list_images('/home/ducdv10/Documents/do_an/backend/app/template/image/training/{}'.format(str_date)))
+    imagePaths = list(paths.list_images('/home/ducdv10/Downloads/do_an_end/backend/app/template/image/training/{}'.format(str_date)))
     X = []
     labels = []
+    if os.path.isfile("data/X_train.pkl"):
+    	X = pickle.load(open("data/X_train.pkl", 'rb'))
+    if os.path.isfile("data/label_train.pkl"):
+        labels = pickle.load(open("data/label_train.pkl", 'rb'))
 
     for imagePath in imagePaths:
         label = imagePath.split(os.path.sep)[-2]
@@ -31,7 +35,7 @@ def train_model(client, user, message):
         image = cv2.imread(imagePath)
         bbs, points = detect_face(image)
         if len(bbs)>0:
-            emb=face_vector.get_vector(image, bbs[0])	
+            emb=face_vector.get_vector(image, bbs[0],points)	
             labels.append(label)
             X.append(emb)
                     
@@ -55,7 +59,6 @@ def train_model(client, user, message):
     filename = 'models/face_model.pkl'
     with open(filename, 'wb') as fo:  
         pickle.dump(novelty_detector, fo)
-    # detection_payload = json.dumps({"img_path": "path_server"})
     client_sub.publish(topic=cf.UPDATE_MODEL)
     set_key(r,"TEST")
 
