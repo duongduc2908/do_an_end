@@ -122,8 +122,8 @@ export const asyncRoutes = [
         meta: { title: 'QL nhân sự' }
       },
       {
-        path: 'drag-table',
-        component: () => import('@/views/table/drag-table'),
+        path: 'tong-hop',
+        component: () => import('@/views/cham-cong/tong_hop'),
         name: 'DragTable',
         meta: { title: 'Tổng hợp' }
       }]
@@ -172,8 +172,8 @@ export const asyncRoutes = [
         }
       },
       {
-        path: 'drag-table',
-        component: () => import('@/views/table/drag-table'),
+        path: 'du-lieu-cham-cong',
+        component: () => import('@/views/cham-cong/data_camera'),
         name: 'Dữ liệu chấm công',
         meta: {
           title: 'Dữ liệu chấm công',
@@ -183,7 +183,7 @@ export const asyncRoutes = [
       },
       {
         path: 'inline-edit-table',
-        component: () => import('@/views/table/inline-edit-table'),
+        component: () => import('@/views/cham-cong/time_sheet_detail'),
         name: 'Bảng chấm công',
         meta: {
           title: 'Bảng chấm công',

@@ -9,7 +9,7 @@
       class="cursor tags-view-item tags-view-item-active m-b-16" style="width: fit-content;margin-left: 24px">
       Traning 
     </div> -->
-    <div class="p-24 flex">
+    <div class="p-24 flex" v-if=this.url>
       <div style="width:75%">
         <img class="img-current w-full" :src="url">
       </div>
@@ -31,9 +31,8 @@ export default {
   data() {
     return {
       currentRole: 'adminDashboard',
-      socket: null,
       listImg: [],
-      url: '',
+      url: null,
       countImg:10,
       isTraining:false
     }

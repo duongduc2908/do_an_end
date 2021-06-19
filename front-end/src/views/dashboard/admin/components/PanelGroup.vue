@@ -9,7 +9,7 @@
           <div class="card-panel-text">
             Tổng số nhân viên
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=this.totals_user :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -22,7 +22,7 @@
           <div class="card-panel-text">
             Đã điểm danh
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=this.user_check_in :duration="3000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -35,7 +35,7 @@
           <div class="card-panel-text">
             Đến muộn
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=this.user_check_in_late :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -46,9 +46,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Nghỉ phép
+            Chưa điểm danh
           </div>
-          <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=this.user_out_check_in :duration="3600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -57,6 +57,7 @@
 
 <script>
 import CountTo from 'vue-count-to'
+import data from '@/views/pdf/content'
 
 export default {
   components: {
@@ -66,6 +67,23 @@ export default {
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
     }
+  },
+  mounted() {
+    this.$socket.on('check_in_to_client', (obj) => {
+      this.totals_user = parseInt(obj.totals);
+      this.user_check_in = parseInt(obj.check_in);
+      this.user_check_in_late = parseInt(obj.check_in_late);
+      this.user_out_check_in = this.totals_user-this.user_check_in_late-this.user_check_in
+    })  
+  },
+  data(){
+    return{
+      totals_user:0,
+      user_check_in_late:0,
+      user_check_in:0,
+      user_out_check_in:0
+    }
+    
   }
 }
 </script>

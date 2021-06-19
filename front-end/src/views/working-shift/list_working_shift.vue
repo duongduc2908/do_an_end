@@ -56,12 +56,12 @@
       </el-table-column>
       <el-table-column label="Gio bat dau" width="150px" align="center">
         <template slot-scope="{ row }">
-          <span>{{ row.StartTime | parseTime("{h}:{i}") }}</span>
+          <span>{{converttime(row.StartTime)}}</span>
         </template>
       </el-table-column>
       <el-table-column label="Gio ket thuc" width="150px" align="center">
         <template slot-scope="{ row }">
-          <span>{{ row.EndTime | parseTime("{h}:{i}") }}</span>
+          <span>{{converttime(row.EndTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="Ten ca" width="250px" align="center">
@@ -81,7 +81,7 @@
       </el-table-column>
       <el-table-column label="Ty le" width="150px" align="center">
         <template slot-scope="{ row }">
-          <span>{{ row.WorkingRate }}</span>
+          <span>{{ row.WorkingRateWeekday }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -97,7 +97,7 @@
           <el-button
             size="mini"
             type="danger"
-            @click="confirmDeleteUser(row, $index)"
+            @click="confirmDeleteWorkingShift(row, $index)"
           >
             Delete
           </el-button>
@@ -224,58 +224,98 @@
         <div class="flex tinh-cong">
           <div class="w-35">
             <el-form-item label="Gio cong " prop="WorkingHour">
-              <el-input type="number" v-model="temp.WorkingHour" />
+               <el-input-number
+                v-model="temp.WorkingHour"
+                placeholder="0"
+                :min="0"
+                :max="24"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
             <el-form-item label="Ngay cong " prop="WorkingDate">
-              <el-input type="number" v-model="temp.WorkingDate" />
+               <el-input-number
+                v-model="temp.WorkingDate"
+                placeholder="0"
+                :min="0"
+                :max="31"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="He so ngay nghi " prop="WorkingRateWeekend">
-              <el-input type="number" v-model="temp.WorkingRateWeekend" />
-            </el-form-item>
+           
           </div>
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
             <el-form-item label="He so ngay thuong " prop="WorkingRateWeekday">
-              <el-input type="number" v-model="temp.WorkingRateWeekday" />
+               <el-input-number
+                v-model="temp.WorkingRateWeekday"
+                placeholder="0"
+                :min="0"
+                :max="30"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
             <el-form-item label="He so ngay le" prop="WorkingRateHoliday">
-              <el-input type="number" v-model="temp.WorkingRateHoliday" />
+              <el-input-number
+                v-model="temp.WorkingRateHoliday"
+                placeholder="0"
+                :min="0"
+                :max="30"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
-            <!-- <el-form-item label="He so ngay le" prop="WorkingRateHoliday">
-              <el-input type="number" v-model="temp.WorkingRateHoliday" />
-            </el-form-item> -->
+             <el-form-item label="He so ngay nghi " prop="WorkingRateWeekend">
+              <el-input-number
+                v-model="temp.WorkingRateWeekend"
+                placeholder="0"
+                :min="0"
+                :max="30"
+                :step="0.01"
+              ></el-input-number>
+            </el-form-item>
           </div>
         </div>
         <div class="flex check-tinh-cong">
           <el-form-item
             label="Neu khong cham vao bi tru "
-            prop="IsShowWithoutCheckIn"
+            prop="IsShowWithoutCheckin"
             label-width="100% !important"
           >
             <el-checkbox
-              v-model="temp.IsShowWithoutCheckIn"
+              v-model="temp.IsShowWithoutCheckin"
               style="width: auto !important;"
             />
           </el-form-item>
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="Gio cong " prop="WorkingHour">
-              <el-input type="number" v-model="temp.WorkingHour" />
+            <el-form-item label="Gio cong " prop="WorkingHourWithoutCheckin">
+               <el-input-number
+                v-model="temp.WorkingHourWithoutCheckin"
+                placeholder="0"
+                :min="0"
+                :max="24"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="Ngay cong " prop="WorkingDate">
-              <el-input type="number" v-model="temp.WorkingDate" />
+            <el-form-item label="Ngay cong " prop="WorkingDayWithoutCheckin">
+              <el-input-number
+                v-model="temp.WorkingDayWithoutCheckin"
+                placeholder="0"
+                :min="0"
+                :max="31"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35"></div>
@@ -294,13 +334,25 @@
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="Gio cong " prop="WorkingHour">
-              <el-input type="number" v-model="temp.WorkingHour" />
+            <el-form-item label="Gio cong " prop="WorkingHourWithoutCheckOut">
+               <el-input-number
+                v-model="temp.WorkingHourWithoutCheckOut"
+                placeholder="0"
+                :min="0"
+                :max="24"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="Ngay cong " prop="WorkingDate">
-              <el-input type="number" v-model="temp.WorkingDate" />
+            <el-form-item label="Ngay cong " prop="WorkingDayWithoutCheckOut">
+              <el-input-number
+                v-model="temp.WorkingDayWithoutCheckOut"
+                placeholder="0"
+                :min="0"
+                :max="31"
+                :step="0.01"
+              ></el-input-number>
             </el-form-item>
           </div>
           <div class="w-35"></div>
@@ -319,12 +371,14 @@
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-
+import moment from 'moment'
+import { deepClone } from '@/utils'
 export default {
   components: { Pagination },
   data() {
     return {
       temp: {
+        _id:"",
         WorkingShiftCode: "",
         WorkingShiftName: "",
         StartTime: "",
@@ -335,19 +389,18 @@ export default {
         StartTimeInTo: "",
         EndTimeInFrom: "",
         EndTimeInTo: "",
+        IsShowWithoutCheckin:"",
+        IsShowWithoutCheckOut:"",
         WorkingHourWithoutCheckin: "",
         WorkingDayWithoutCheckin: "",
         WorkingHourWithoutCheckOut: "",
         WorkingDayWithoutCheckOut: "",
         WorkingRateWeekday: "",
         WorkingRateWeekend: "",
-        WorkingRateHoliday: 0,
+        WorkingRateHoliday: "",
         WorkingHour: "",
-        WorkingRate: "",
-        ModifiedDate: "",
-        ModifieBy: "",
-        CreateDate: "",
-        CreateBy: ""
+        WorkingDate: "",
+        state:""
       },
       rules: {
         WorkingShiftName: [
@@ -375,6 +428,7 @@ export default {
           }
         ]
       },
+      dialogType:'',
       dialogFormVisible: false,
       listQuery: {
         page: 1,
@@ -402,7 +456,14 @@ export default {
     this.getList();
   },
   methods: {
-    editWorkingShift(data) {},
+    converttime(date){
+      return moment(date, ["h:mm A"]).format("HH:mm");
+    },
+    editWorkingShift(scope) {
+      this.dialogType = 'edit'
+      this.dialogFormVisible = true
+      this.temp = deepClone(scope)
+    },
     getList() {
       this.listLoading = true;
       let query_filter = `{"$and": [`;
@@ -439,8 +500,63 @@ export default {
       // this.src='http://localhost:4321/avatar/default_avatar.png'
       this.temp.state = 1;
       this.dialogFormVisible = true;
+      this.dialogType = 'add'
       // }
-    }
+    },
+    deleteWorkingShift(data){
+      if(!data){
+        return;
+      }
+      data.state = 3;
+      this.$store.dispatch("working_shift/save_WorkingShift",data).then(res=>{
+        this.getRoles();
+        this.$notify({
+          title: 'Success',
+          dangerouslyUseHTMLString: true,
+          message: `
+              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
+              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+            `,
+          type: 'success'
+        })
+      })
+    },
+    confirmDeleteWorkingShift(row,$index) {
+      debugger
+      this.$confirm('Ban co chac muon xoa ca lam viec ?', 'Warning', {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      })
+        .then(async() => {
+          await this.deleteWorkingShift(row)
+          this.list.splice($index, 1)
+          this.$message({
+            type: 'success',
+            message: 'Delete succed!'
+          })
+        })
+        .catch(err => { console.error(err) })
+    },
+    saveWorkingShift() {
+      this.temp.state = this.dialogType === 'edit' ? 2 : 1;
+      debugger
+      this.$store.dispatch("working_shift/save_WorkingShift",this.temp).then(res=>{
+        this.getList();
+        this.dialogFormVisible = false;
+        this.$notify({
+          title: 'Success',
+          dangerouslyUseHTMLString: true,
+          message: `
+              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
+              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+            `,
+          type: 'success'
+        })
+      })
+      console.log(this.role);
+      this.dialogVisible = false
+    },
   }
 };
 </script>
@@ -461,13 +577,10 @@ export default {
 }
 .tinh-cong {
   .el-form-item__label {
-    width: 100px !important;
-  }
-  .el-form-item__label {
     width: 150px !important;
   }
   .el-form-item__content {
-    width: calc(100% - 210px) !important;
+    width: calc(100% - 160px) !important;
   }
 }
 .check-tinh-cong {

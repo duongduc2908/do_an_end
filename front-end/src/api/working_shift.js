@@ -7,3 +7,10 @@ export function getWorkingShift(param) {
     params:param
   })
 }
+export function save_WorkingShift(data) {
+  return request({
+    url: `working_shift/${data.state == 1 ? 'create' : data.state == 2 ? 'update' : 'delete'}`,
+    method: 'post',
+    data:data
+  })
+}

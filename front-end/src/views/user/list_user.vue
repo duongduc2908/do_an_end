@@ -428,9 +428,6 @@
       class="tranin-user"
     >
       <div class="flex">
-        <!-- <div style="width:75%">
-            <img class="img-current w-full" :src="url">
-          </div> -->
         <div
           class="list-imt-his flex"
           style="flex-wrap: wrap;height: 100%;max-height: 600px;overflow: auto;"

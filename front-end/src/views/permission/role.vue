@@ -95,11 +95,6 @@ export default {
   // components:{MultiSelect},
   data() {
     return {
-      // options: [
-      //   ],
-      // searchText: '', // If value is falsy, reset searchText & searchItem
-      // items: [],
-      // lastSelectItem: {},
       current_parent_code:"",
       routes: [],
       rolesList: [],
