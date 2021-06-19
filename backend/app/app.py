@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import logging
+from socket import socket
 import traceback
 from time import sleep, strftime, time
 from typing_extensions import runtime
@@ -8,63 +10,13 @@ from pytz import HOUR
 from app.api import v1 as api_v1
 from app.api import stream as api_stream
 from app.extensions import jwt, client, app_log_handler, socketio, load_frame_from_redis, red,scheduler
+from app.utils import set_auto_MaChamCong
 from .settings import ProdConfig
 from flask import Flask, session, request
 from flask_cors import CORS
-from app import check_func
+from bson import ObjectId
+from app.check_func import check_shift_plan
 
-# from apscheduler.events import (
-#     EVENT_JOB_ADDED,
-#     EVENT_JOB_ERROR,
-#     EVENT_JOB_EXECUTED,
-#     EVENT_JOB_MISSED,
-#     EVENT_JOB_REMOVED,
-#     EVENT_JOB_SUBMITTED,
-# )
-
-
-# def job_missed(event):
-#     """Job missed event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# def job_error(event):
-#     """Job error event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# def job_executed(event):
-#     """Job executed event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# def job_added(event):
-#     """Job added event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# def job_removed(event):
-#     """Job removed event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# def job_submitted(event):
-#     """Job scheduled to run event."""
-#     with scheduler.app.app_context():
-#         print(event)  # noqa: T001
-
-
-# scheduler.add_listener(job_missed, EVENT_JOB_MISSED)
-# scheduler.add_listener(job_error, EVENT_JOB_ERROR)
-# scheduler.add_listener(job_executed, EVENT_JOB_EXECUTED)
-# scheduler.add_listener(job_added, EVENT_JOB_ADDED)
-# scheduler.add_listener(job_removed, EVENT_JOB_REMOVED)
-# scheduler.add_listener(job_submitted, EVENT_JOB_SUBMITTED)
 
 users = {}
 
@@ -168,6 +120,9 @@ def register_blueprints(app):
     app.register_blueprint(api_v1.working_shift.api, url_prefix='/api/v1/working_shift')
     app.register_blueprint(api_v1.shift_plan.api, url_prefix='/api/v1/shift_plan')
     app.register_blueprint(api_v1.shift_plan_employee.api, url_prefix='/api/v1/shift_plan_employee')
+    app.register_blueprint(api_v1.time_sheet.api, url_prefix='/api/v1/time_sheet')
+    app.register_blueprint(api_v1.timekeeper_data.api, url_prefix='/api/v1/timekeeper_data')
+    app.register_blueprint(api_v1.timesheet_detail.api, url_prefix='/api/v1/timesheet_detail')
 
 
 @socketio.on('connect')
@@ -175,7 +130,7 @@ def connect():
     scheduler.remove_all_jobs()
     # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='cron',day=10,month=6,year=2021,hour=2, minute=9, replace_existing=True,timezone='UTC')
     # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='cron',day="*",day_of_week="0-4",hour="6")
-    # scheduler.add_job(func=check_func.check_shift_plan, id='apscheduler_add',trigger='interval',seconds=5)
+    # scheduler.add_job(func=check_shift_plan, id='apscheduler_add',trigger='interval',seconds=5)
 
 
     @socketio.on('new_frame_event')
@@ -211,6 +166,41 @@ def connect():
             'img_path': img_path
         })
         logging.info("Emit new frame of timestamp {} to frontends at {}")
+
+    
+    @socketio.on('check_in_user')
+    def check_in(message):         
+        MaNV = message["MaNV"]
+        timestamp = message["timestamp"]
+        img_path = message["img_path"]
+        id_camera = message["id"]
+        user = client.db.user.find_one({'MaNV': MaNV})
+        camera = client.db.camera.find_one({'_id': id_camera})
+        if user and camera:
+            _id = str(ObjectId())
+            camera_data = {
+                '_id': _id,
+                'EmployeeID': user["_id"],
+                'EmployeeCode': user["MaNV"],
+                'EmployeeName': user["full_name"],
+                'OrganizationUnitID': user["OrganizationUnitID"],
+                'OrganizationUnitName': user["OrganizationUnitName"],
+                'CheckTime': datetime.fromtimestamp(timestamp),
+                'TimeKeeperID':camera["_id"],
+                'TimeKeeperName': camera["name"],
+                "CreateDate":datetime.now(),
+                "JobPositionID":user["JobPositionID"],
+                "JobPositionName":user["JobPositionName"],
+                "TimeKeeperDataCode":set_auto_MaChamCong(),
+                "ImagePath":img_path
+            }
+            try:
+                client.db.timekeeper_data.insert_one(camera_data)
+                # List_User_Check_In.append({user["_id"]:timestamp})
+                # totals = client.user.find( {} ).count()
+                # socketio.emit('check_in_to_client', {'totals': totals,'check_in':list(List_User_Check_In),'check_in_late':'0'})
+            except Exception as ex:
+                print(ex)
 
 
     @socketio.on('disconnect')

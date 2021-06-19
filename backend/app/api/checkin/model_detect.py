@@ -93,36 +93,7 @@ def backend_to_model_stack_frame(client, user, message):
 
                 PATH_IMAGE_CAMERA_SEVER = "http://localhost:4321/image/camera"
                 path_server = os.path.join(PATH_IMAGE_CAMERA_SEVER+"/{}".format(str_date), "{}_{}.jpg".format(name[0],t))
-                detection_payload = json.dumps({"img_path": path_server})
-
-                # user = client.db.user.find_one({'MaNV': name})
-                # _id = str(ObjectId())
-                # camera_data = {
-                #     '_id': _id,
-                #     'EmployeeID': "",
-                #     'EmployeeCode': "",
-                #     'EmployeeName': "",
-                #     'OrganizationUnitID': "",
-                #     'OrganizationUnitName': "",
-                #     'CheckTime': "",
-                #     'TimeKeeperID': "",
-                #     'TimeKeeperName': "",
-                #     'TenantID':"",
-                #     "ModifiedDate":"",
-                #     "ModifiedBy":"",
-                #     "CreateDate":"",
-                #     "CreateBy":"",
-                #     "JobPositionID":"",
-                #     "JobPositionName":"",
-                #     "WorkAddress":"",
-                #     "TimeKeeperDataCode":""
-                # }
-                # try:
-                #     database.db.camera_data.insert_one(camera_data)
-                #     notif = notification(content=claims['full_name']+" đã thêm camera " + name + " thành công", user_id=user_curr_id, type=CREATE)
-                #     client.db.history.insert_one(notif)
-                # except Exception as ex:
-                #     print(ex)
+                detection_payload = json.dumps({"img_path": path_server,"timestamp":t,"MaNV":name[0],"id":json_payload["id"]})
 
                 client_sub.publish(topic=cf.UPDATE_BOXES_TOPIC, payload=detection_payload)
                 logging.info("[D-{}] Publish new detection.".format(now))                

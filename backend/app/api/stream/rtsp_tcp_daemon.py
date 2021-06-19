@@ -21,7 +21,7 @@ TRIAL_CONNECTION_NUM = 1
 count = 0
 
 
-def process_frame(frame,mode):
+def process_frame(frame,mode,id=None):
     logging.info("frame shape: {}".format(frame.shape))
     global FRAME_QUEUE
     global TIME_QUEUE
@@ -61,7 +61,7 @@ def process_frame(frame,mode):
     # Need call now again for more precise publish timestamp
         
     now = datetime.now().timestamp()
-    stack_payload = json.dumps({"timestamp": now})
+    stack_payload = json.dumps({"timestamp": now,"id":id})
     pubsub_client.publish(cf.UPDATE_STACK_TOPIC, stack_payload)
 
     frame_payload = json.dumps({"timestamp": now})
@@ -89,6 +89,7 @@ while not PUBSUB_CONNECTED:    # Wait for connection
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--link", help="IP camera url including username password in RTSP case.")
+    parser.add_argument("-id", "--id",default=None, help="ID camera.")
     parser.add_argument("-v", "--mode", type=int, choices=[0, 1], help="0: run, 1: test")
     args = parser.parse_args()
     link = args.link
@@ -139,7 +140,7 @@ if __name__ == '__main__':
                     # See more: need thread here to read stream udp with minimal loss
                     # https://stackoverflow.com/questions/49233433/opencv-read-errorh264-0x8f915e0-error-while-decoding-mb-53-20-bytestream
                     # https://stackoverflow.com/questions/29075467/set-rtsp-udp-buffer-size-in-ffmpeg-libav
-                    processing_frame_thread = threading.Thread(target=process_frame, args=(frame,args.mode))
+                    processing_frame_thread = threading.Thread(target=process_frame, args=(frame,args.mode,args.id))
                     processing_frame_thread.start()
         except Exception as e:
             logging.exception("Disconnect to pub-sub broker.")

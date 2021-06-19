@@ -22,7 +22,7 @@ def post():
         return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
     try:
         json_data = request.get_json()
-        WorkingShiftCode = json_data.get('WorkingShiftCode').lower()
+        WorkingShiftCode = json_data.get('WorkingShiftCode').upper()
         WorkingShiftName = json_data.get('WorkingShiftName')
         StartTime = json_data.get('StartTime', None)
         EndTime = json_data.get('EndTime', None)
@@ -32,25 +32,17 @@ def post():
         StartTimeInTo = json_data.get('StartTimeInTo', None)
         EndTimeInFrom = json_data.get('EndTimeInFrom')
         EndTimeInTo = json_data.get('EndTimeInTo', None)
-        IsBreakTime = json_data.get('IsBreakTime', None)
-        StartBreakTime = json_data.get('StartBreakTime', None)
-        EndBreakTime = json_data.get('EndBreakTime', None)
-        CheckBreakTimeOut = json_data.get('CheckBreakTimeOut', None)
-        CheckBreakTimeIn = json_data.get('CheckBreakTimeIn', None)
-        BreakTimeOutFrom = json_data.get('BreakTimeOutFrom', None)
-        BreakTimeInTo = json_data.get('BreakTimeInTo', None)
-        IsAllowLateInEarlyOut = json_data.get('IsAllowLateInEarlyOut', None)
-        LateInTime = json_data.get('LateInTime', None)
-        EarlyOutTime = json_data.get('EarlyOutTime', None)
         WorkingHour = json_data.get('WorkingHour', None)
-        WorkingRate = json_data.get('WorkingRate', None)
-        IsLateInEarlyOutPenalty = json_data.get('IsLateInEarlyOutPenalty', None)
-        LateInEarlyOutPenalty = json_data.get('LateInEarlyOutPenalty', None)
+        WorkingDate = json_data.get('WorkingDate', None)
+        WorkingRateWeekday = json_data.get('WorkingRateWeekday', None),
+        WorkingRateWeekend = json_data.get('WorkingRateWeekend', None),
+        WorkingRateHoliday = json_data.get('WorkingRateHoliday', None),
         IsShowWithoutCheckin = json_data.get('IsShowWithoutCheckin', None)
         WorkingHourWithoutCheckin = json_data.get('WorkingHourWithoutCheckin', None)
         WorkingDayWithoutCheckin = json_data.get('WorkingDayWithoutCheckin', None)
         IsShowWithoutCheckOut = json_data.get('IsShowWithoutCheckOut', None)
         WorkingHourWithoutCheckOut = json_data.get('WorkingHourWithoutCheckOut', None)
+        WorkingDayWithoutCheckOut = json_data.get('WorkingDayWithoutCheckOut', None)
 
     except Exception as ex:
         print(ex)
@@ -69,25 +61,19 @@ def post():
         'StartTimeInTo': StartTimeInTo,
         'EndTimeInFrom': EndTimeInFrom,
         'EndTimeInTo': EndTimeInTo,
-        'IsBreakTime': IsBreakTime,
-        'StartBreakTime': StartBreakTime,
-        'EndBreakTime': EndBreakTime,
-        'CheckBreakTimeOut': CheckBreakTimeOut,
-        'CheckBreakTimeIn': CheckBreakTimeIn,
-        'BreakTimeOutFrom': BreakTimeOutFrom,
-        'BreakTimeInTo': BreakTimeInTo,
-        'IsAllowLateInEarlyOut': IsAllowLateInEarlyOut,
-        'LateInTime': LateInTime,
-        'EarlyOutTime': EarlyOutTime,
         'WorkingHour':WorkingHour,
-        'WorkingRate':WorkingRate,
-        'IsLateInEarlyOutPenalty':IsLateInEarlyOutPenalty,
-        'LateInEarlyOutPenalty': LateInEarlyOutPenalty,
+        'WorkingDate':WorkingDate,
+        'WorkingRateWeekday':float(WorkingRateWeekday[0]),
+        'WorkingRateWeekend':float(WorkingRateWeekend[0]),
+        'WorkingRateHoliday':float(WorkingRateHoliday[0]),
         'IsShowWithoutCheckin': IsShowWithoutCheckin,
         'WorkingHourWithoutCheckin': WorkingHourWithoutCheckin,
         'WorkingDayWithoutCheckin':WorkingDayWithoutCheckin,
         'IsShowWithoutCheckOut':IsShowWithoutCheckOut,
-        'WorkingHourWithoutCheckOut':WorkingHourWithoutCheckOut
+        'WorkingHourWithoutCheckOut':WorkingHourWithoutCheckOut,
+        'WorkingDayWithoutCheckOut':WorkingDayWithoutCheckOut,
+        'CreateDate':datetime.now(),
+        'CreateBy':claims['full_name']
     }
     try:
         client.db.working_shift.insert_one(working_shift)
@@ -96,7 +82,7 @@ def post():
     except Exception as ex:
         print(ex)
         return send_error(message='có lỗi ngoại lệ xảy ra')
-
+    print(working_shift)
     return send_result(message="Tạo user thành công ", data=working_shift)
 
 
@@ -117,7 +103,7 @@ def put():
     try:
         json_data = request.get_json()
         WorkingShift_id = json_data.get('_id', None)
-        WorkingShiftCode = json_data.get('WorkingShiftCode').lower()
+        WorkingShiftCode = json_data.get('WorkingShiftCode').upper()
         WorkingShiftName = json_data.get('WorkingShiftName')
         StartTime = json_data.get('StartTime', None)
         EndTime = json_data.get('EndTime', None)
@@ -127,25 +113,17 @@ def put():
         StartTimeInTo = json_data.get('StartTimeInTo', None)
         EndTimeInFrom = json_data.get('EndTimeInFrom')
         EndTimeInTo = json_data.get('EndTimeInTo', None)
-        IsBreakTime = json_data.get('IsBreakTime', None)
-        StartBreakTime = json_data.get('StartBreakTime', None)
-        EndBreakTime = json_data.get('EndBreakTime', None)
-        CheckBreakTimeOut = json_data.get('CheckBreakTimeOut', None)
-        CheckBreakTimeIn = json_data.get('CheckBreakTimeIn', None)
-        BreakTimeOutFrom = json_data.get('BreakTimeOutFrom', None)
-        BreakTimeInTo = json_data.get('BreakTimeInTo', None)
-        IsAllowLateInEarlyOut = json_data.get('IsAllowLateInEarlyOut', None)
-        LateInTime = json_data.get('LateInTime', None)
-        EarlyOutTime = json_data.get('EarlyOutTime', None)
         WorkingHour = json_data.get('WorkingHour', None)
-        WorkingRate = json_data.get('WorkingRate', None)
-        IsLateInEarlyOutPenalty = json_data.get('IsLateInEarlyOutPenalty', None)
-        LateInEarlyOutPenalty = json_data.get('LateInEarlyOutPenalty', None)
+        WorkingDate = json_data.get('WorkingDate', None)
+        WorkingRateWeekday = json_data.get('WorkingRateWeekday', None),
+        WorkingRateWeekend = json_data.get('WorkingRateWeekend', None),
+        WorkingRateHoliday = json_data.get('WorkingRateHoliday', None),
         IsShowWithoutCheckin = json_data.get('IsShowWithoutCheckin', None)
         WorkingHourWithoutCheckin = json_data.get('WorkingHourWithoutCheckin', None)
         WorkingDayWithoutCheckin = json_data.get('WorkingDayWithoutCheckin', None)
         IsShowWithoutCheckOut = json_data.get('IsShowWithoutCheckOut', None)
         WorkingHourWithoutCheckOut = json_data.get('WorkingHourWithoutCheckOut', None)
+        WorkingDayWithoutCheckOut = json_data.get('WorkingDayWithoutCheckOut', None)
 
     except Exception as e:
         print(e)
@@ -156,35 +134,27 @@ def put():
         return send_error(message='Không tìm thay ca lam viec.')
     new_working_shift = {
         '$set': {
-            'WorkingShiftCode': WorkingShiftCode,
-            'WorkingShiftName': WorkingShiftName,
-            'StartTime': StartTime,
-            'EndTime': EndTime,
-            'CheckStartTime': CheckStartTime,
-            'CheckEndTime': CheckEndTime,
-            'StartTimeInFrom': StartTimeInFrom,
-            'StartTimeInTo': StartTimeInTo,
-            'EndTimeInFrom': EndTimeInFrom,
-            'EndTimeInTo': EndTimeInTo,
-            'IsBreakTime': IsBreakTime,
-            'StartBreakTime': StartBreakTime,
-            'EndBreakTime': EndBreakTime,
-            'CheckBreakTimeOut': CheckBreakTimeOut,
-            'CheckBreakTimeIn': CheckBreakTimeIn,
-            'BreakTimeOutFrom': BreakTimeOutFrom,
-            'BreakTimeInTo': BreakTimeInTo,
-            'IsAllowLateInEarlyOut': IsAllowLateInEarlyOut,
-            'LateInTime': LateInTime,
-            'EarlyOutTime': EarlyOutTime,
-            'WorkingHour':WorkingHour,
-            'WorkingRate':WorkingRate,
-            'IsLateInEarlyOutPenalty':IsLateInEarlyOutPenalty,
-            'LateInEarlyOutPenalty': LateInEarlyOutPenalty,
-            'IsShowWithoutCheckin': IsShowWithoutCheckin,
-            'WorkingHourWithoutCheckin': WorkingHourWithoutCheckin,
-            'WorkingDayWithoutCheckin':WorkingDayWithoutCheckin,
-            'IsShowWithoutCheckOut':IsShowWithoutCheckOut,
-            'WorkingHourWithoutCheckOut':WorkingHourWithoutCheckOut
+        'WorkingShiftCode': WorkingShiftCode,
+        'WorkingShiftName': WorkingShiftName,
+        'StartTime': StartTime,
+        'EndTime': EndTime,
+        'CheckStartTime': CheckStartTime,
+        'CheckEndTime': CheckEndTime,
+        'StartTimeInFrom': StartTimeInFrom,
+        'StartTimeInTo': StartTimeInTo,
+        'EndTimeInFrom': EndTimeInFrom,
+        'EndTimeInTo': EndTimeInTo,
+        'WorkingHour':WorkingHour,
+        'WorkingDate':WorkingDate,
+        'WorkingRateWeekday':float(WorkingRateWeekday[0]),
+        'WorkingRateWeekend':float(WorkingRateWeekend[0]),
+        'WorkingRateHoliday':float(WorkingRateHoliday[0]),
+        'IsShowWithoutCheckin': IsShowWithoutCheckin,
+        'WorkingHourWithoutCheckin': WorkingHourWithoutCheckin,
+        'WorkingDayWithoutCheckin':WorkingDayWithoutCheckin,
+        'IsShowWithoutCheckOut':IsShowWithoutCheckOut,
+        'WorkingHourWithoutCheckOut':WorkingHourWithoutCheckOut,
+        'WorkingDayWithoutCheckOut':WorkingDayWithoutCheckOut
         }}
     try:
         client.db.working_shift.update_one({'_id': WorkingShift_id}, new_working_shift)

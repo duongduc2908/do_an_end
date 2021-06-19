@@ -150,6 +150,9 @@ def update_detection(client, userdata,msg):
     json_payload = json.loads(msg.payload)
     path_img = json_payload["img_path"]
     try:
+        logging.info("===================maNV {}".format(json_payload["MaNV"]))                
+        # if json_payload["MaNV"] != '' and json_payload["MaNV"]:
+        sio.emit('check_in_user',json_payload)
         sio.emit('new_box_to_client', {'img_path': path_img})
     except Exception as e:
         pass

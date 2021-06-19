@@ -42,12 +42,14 @@ def post():
         _id = str(ObjectId())
         shift_plan_employee = {
             '_id': _id,
-            'ShiftPlanDay': ShiftPlanDay,
+            'ShiftPlanDay': datetime.strptime(ShiftPlanDay,"%Y-%m-%dT%H:%M:%S.%fZ"),
             'user_id':user_add['_id'],
             'MaNV':user_add['MaNV'],
             'user_fullname':user_add['full_name'],
             'OrganizationUnitID':user_add['OrganizationUnitID'],
             'OrganizationUnitName':user_add['OrganizationUnitName'],
+            'JobPositionID':user_add['JobPositionID'],
+            'JobPositionName':user_add['JobPositionName'],
             'WorkingShiftIDs':WorkingShiftIDs,
             'WorkingShiftNames':WorkingShiftNames,
             'WorkingShift':list_working_shift,

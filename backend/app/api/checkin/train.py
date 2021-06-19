@@ -35,7 +35,7 @@ def train_model(client, user, message):
         image = cv2.imread(imagePath)
         bbs, points = detect_face(image)
         if len(bbs)>0:
-            emb=face_vector.get_vector(image, bbs[0],points)	
+            emb=face_vector.get_vector(image, bbs[0])	
             labels.append(label)
             X.append(emb)
                     

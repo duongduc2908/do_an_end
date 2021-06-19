@@ -31,3 +31,4 @@ scipy==1.4.1
 webargs==7.0.1
 Werkzeug==0.12.2
 paho-mqtt==1.5.1
+holidays

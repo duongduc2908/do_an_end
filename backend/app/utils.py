@@ -13,6 +13,10 @@ patterns = [r'§[ ]*[\d]+[ ]*[der |des |von der |vom ]*[{}]+',
             r'§[ ]*[\d]+[ ]*[Abs.|Absatz]+[ ]*[\d]+[ ]*[Nr.|Nummer|Satz]+[ ]*[\d]+[ ]*[der |des |von der |vom ]*[%s]+']
 
 
+List_User_Check_In = []
+List_User_Check_Out = []
+
+
 def parse_req(argmap):
     """
     Parser request from client
@@ -202,6 +206,11 @@ def set_auto_MaNV():
     stt = int(tmp[2: len(tmp)]) + 1
     mnv = str1 + '{:04d}'.format(stt)
     return mnv
+
+
+def set_auto_MaChamCong():
+    today = datetime.date.today();
+    return "CHAMCONG_"+str(today.day)+"_"+str(today.month)+"_"+str(today.year)
 
 
 def random_pwd():

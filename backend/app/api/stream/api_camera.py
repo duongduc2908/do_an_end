@@ -96,7 +96,7 @@ def check_connect():
                     logging.info("FAIL to connect to RTSP/TCP camera at {}".format(link))
                     return send_error(data=response_fail ,code=400)
                 client.db.camera.update_one({'_id': _id}, new_camera)
-                _run_daemon(['python', 'app/api/stream/rtsp_tcp_daemon.py', '--link', link, '--mode', '0'], my_env)
+                _run_daemon(['python', 'app/api/stream/rtsp_tcp_daemon.py', '--link', link, '--mode', '0','--id',camera["_id"]], my_env)
             else:
                 logging.info("FAIL Not supported protocol")
                 return send_error(data=response_fail ,code=400)
