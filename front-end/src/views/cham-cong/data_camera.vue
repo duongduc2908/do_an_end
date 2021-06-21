@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div class="filter-container" v-if="checkRolePermission('View', subsystem_code, false)"> 
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
@@ -12,7 +12,7 @@
           />
           <el-select
             v-model="listQuery.OrganizationUnitID"
-            placeholder="Phong ban"
+            placeholder="Phòng ban"
             clearable
             class="filter-item"
             style="width: 200px"
@@ -28,7 +28,7 @@
           </el-select>
           <el-select
             v-model="listQuery.JobPositionID"
-            placeholder="Chuc vu"
+            placeholder="Chức vụ"
             clearable
             class="filter-item"
             style="width: 130px"
@@ -41,7 +41,7 @@
             />
           </el-select>
 
-          <label class="label_date" style="margin-left:20px">Tu ngay: </label>
+          <label class="label_date" style="margin-left:20px">Từ ngày: </label>
           <el-date-picker
             style="width: 200px;"
             class="filter-item"
@@ -84,37 +84,37 @@
         highlight-current-row
         style="margin-top:20px"
       >
-        <el-table-column label="Ho ten" align="center">
+        <el-table-column label="Họ tên" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.EmployeeName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Ma nhan vien" align="center">
+        <el-table-column label="Mã nhân viên" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.EmployeeCode }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="To chuc" align="center">
+        <el-table-column label="Tổ chức" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.OrganizationUnitName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Vi tri" align="center">
+        <el-table-column label="Vị trí" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.JobPositionName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Ngay cham cong" align="center">
+        <el-table-column label="Ngày chấm công" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.CheckTime | parseTime("{y}-{m}-{d} {h}:{m}") }}</span>
           </template>
         </el-table-column>
-         <el-table-column label="May cham cong" align="center">
+         <el-table-column label="Máy chấm công" align="center">
           <template slot-scope="{ row }">
             <span>{{ row.TimeKeeperName}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Hinh anh" align="center">
+        <el-table-column label="Hình ảnh" align="center">
           <template slot-scope="{ row }">
             <img class="img-current w-full" :src="row.ImagePath" />
           </template>
@@ -132,7 +132,7 @@
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-
+import checkRolePermission from "@/utils/permission";
 export default {
   components: { Pagination },
   data() {
@@ -147,6 +147,7 @@ export default {
         start_date: undefined,
         to_date: undefined
       },
+      subsystem_code: "DU_LIEU_CHAM_CONG",
       tableKey:1,
       listLoading: true,
       list: null,
@@ -158,6 +159,7 @@ export default {
     this.getList();
   },
   methods: {
+    checkRolePermission,
     click_Organization(data){
       debugger
       let param = {

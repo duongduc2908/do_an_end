@@ -66,5 +66,3 @@ def post():
         notif = notification(content=claims['full_name']+" đã phan ca lam viec  thành công cho "+user_add['MaNV'], user_id=user_curr_id, type=CREATE)
         client.db.history.insert_one(notif)
     return send_result(message="Tạo user thành công ")
-
-

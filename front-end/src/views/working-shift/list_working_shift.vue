@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div class="filter-container" v-if="checkRolePermission('View',subsystem_code,false)">
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
@@ -28,6 +28,7 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
+        v-if="checkRolePermission('Add',subsystem_code,false)"
       >
         Thêm mới
       </el-button>
@@ -44,57 +45,58 @@
       style="width: 100%;"
     >
       <el-table-column
-        label="Ma ca"
+        label="Mã ca"
         align="center"
       >
         <template slot-scope="{ row }">
           <span>{{ row.WorkingShiftCode }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Gio bat dau" width="150px" align="center">
+      <el-table-column label="Giờ bắt đầu" width="150px" align="center">
         <template slot-scope="{ row }">
           <span>{{converttime(row.StartTime)}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Gio ket thuc" width="150px" align="center">
+      <el-table-column label="Giờ kết thúc" width="150px" align="center">
         <template slot-scope="{ row }">
           <span>{{converttime(row.EndTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Ten ca" width="250px" align="center">
+      <el-table-column label="Tên ca" width="250px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.WorkingShiftName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Ngay tao" width="200px" align="center">
+      <el-table-column label="Ngày tạo" width="200px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.CreateDate | parseTime("{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Gio lam viec" width="200px" align="center">
+      <el-table-column label="Giờ làm việc" width="200px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.WorkingHour }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Ty le" width="150px" align="center">
+      <el-table-column label="Tỷ lệ" width="150px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.WorkingRateWeekday }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        label="Actions"
+        label="Hành động"
         align="center"
         width="300"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="editWorkingShift(row)">
+          <el-button type="primary" size="mini" @click="editWorkingShift(row)" v-if="checkRolePermission('Edit',subsystem_code,false)">
             Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteWorkingShift(row, $index)"
+            v-if="checkRolePermission('Delete',subsystem_code,false)"
           >
             Xóa
           </el-button>
@@ -130,19 +132,19 @@
         </div>
         <div class="flex">
           <div class="w-50">
-            <el-form-item label="Ten ca " prop="WorkingShiftName">
+            <el-form-item label="Tên ca " prop="WorkingShiftName">
               <el-input v-model="temp.WorkingShiftName" />
             </el-form-item>
           </div>
           <div class="w-50">
-            <el-form-item label="Ma ca " prop="WorkingShiftCode">
+            <el-form-item label="Mã ca " prop="WorkingShiftCode">
               <el-input v-model="temp.WorkingShiftCode" />
             </el-form-item>
           </div>
         </div>
         <div class="flex">
           <div class="start-time" style="width: 240px !important;">
-            <el-form-item label="Gio bat dau" prop="StartTime">
+            <el-form-item label="Giờ bắt đầu" prop="StartTime">
               <el-time-picker
                 v-model="temp.StartTime"
                 type="time"
@@ -157,7 +159,7 @@
             </el-form-item>
           </div>
           <div style="width: 240px !important;">
-            <el-form-item class="w-full" label="Tu" prop="StartTimeInFrom">
+            <el-form-item class="w-full" label="Từ" prop="StartTimeInFrom">
               <el-time-picker
                 v-model="temp.StartTimeInFrom"
                 type="time"
@@ -167,7 +169,7 @@
             </el-form-item>
           </div>
           <div style="width: 240px !important;">
-            <el-form-item class=" w-full" label="Den" prop="StartTimeInTo">
+            <el-form-item class=" w-full" label="Đến" prop="StartTimeInTo">
               <el-time-picker
                 v-model="temp.StartTimeInTo"
                 type="time"
@@ -179,7 +181,7 @@
         </div>
         <div class="flex">
           <div class="start-time" style="width: 240px !important;">
-            <el-form-item label="Gio ket thuc" prop="EndTime">
+            <el-form-item label="Giờ kết thúc" prop="EndTime">
               <el-time-picker
                 v-model="temp.EndTime"
                 type="time"
@@ -194,7 +196,7 @@
             </el-form-item>
           </div>
           <div style="width: 240px !important;">
-            <el-form-item class="w-full" label="Tu" prop="EndTimeInFrom">
+            <el-form-item class="w-full" label="Từ" prop="EndTimeInFrom">
               <el-time-picker
                 v-model="temp.EndTimeInFrom"
                 type="time"
@@ -204,7 +206,7 @@
             </el-form-item>
           </div>
           <div style="width: 240px !important;">
-            <el-form-item class=" w-full" label="Den" prop="EndTimeInTo">
+            <el-form-item class=" w-full" label="Đến" prop="EndTimeInTo">
               <el-time-picker
                 v-model="temp.EndTimeInTo"
                 type="time"
@@ -216,11 +218,11 @@
         </div>
 
         <div>
-          <h2>Tinh cong</h2>
+          <h2>Tính công</h2>
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="Gio cong " prop="WorkingHour">
+            <el-form-item label="Giờ công " prop="WorkingHour">
                <el-input-number
                 v-model="temp.WorkingHour"
                 placeholder="0"
@@ -231,7 +233,7 @@
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="Ngay cong " prop="WorkingDate">
+            <el-form-item label="Ngày công " prop="WorkingDate">
                <el-input-number
                 v-model="temp.WorkingDate"
                 placeholder="0"
@@ -247,7 +249,7 @@
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="He so ngay thuong " prop="WorkingRateWeekday">
+            <el-form-item label="Hệ số ngày thường " prop="WorkingRateWeekday">
                <el-input-number
                 v-model="temp.WorkingRateWeekday"
                 placeholder="0"
@@ -258,7 +260,7 @@
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="He so ngay le" prop="WorkingRateHoliday">
+            <el-form-item label="Hệ số ngày lễ " prop="WorkingRateHoliday">
               <el-input-number
                 v-model="temp.WorkingRateHoliday"
                 placeholder="0"
@@ -269,7 +271,7 @@
             </el-form-item>
           </div>
           <div class="w-35">
-             <el-form-item label="He so ngay nghi " prop="WorkingRateWeekend">
+             <el-form-item label="Hệ số ngày nghỉ " prop="WorkingRateWeekend">
               <el-input-number
                 v-model="temp.WorkingRateWeekend"
                 placeholder="0"
@@ -294,7 +296,7 @@
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="Gio cong " prop="WorkingHourWithoutCheckin">
+            <el-form-item label="Giờ công " prop="WorkingHourWithoutCheckin">
                <el-input-number
                 v-model="temp.WorkingHourWithoutCheckin"
                 placeholder="0"
@@ -305,7 +307,7 @@
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="Ngay cong " prop="WorkingDayWithoutCheckin">
+            <el-form-item label="Ngày công " prop="WorkingDayWithoutCheckin">
               <el-input-number
                 v-model="temp.WorkingDayWithoutCheckin"
                 placeholder="0"
@@ -331,7 +333,7 @@
         </div>
         <div class="flex tinh-cong">
           <div class="w-35">
-            <el-form-item label="Gio cong " prop="WorkingHourWithoutCheckOut">
+            <el-form-item label="Giờ công " prop="WorkingHourWithoutCheckOut">
                <el-input-number
                 v-model="temp.WorkingHourWithoutCheckOut"
                 placeholder="0"
@@ -342,7 +344,7 @@
             </el-form-item>
           </div>
           <div class="w-35">
-            <el-form-item label="Ngay cong " prop="WorkingDayWithoutCheckOut">
+            <el-form-item label="Ngày công " prop="WorkingDayWithoutCheckOut">
               <el-input-number
                 v-model="temp.WorkingDayWithoutCheckOut"
                 placeholder="0"
@@ -368,12 +370,14 @@
 </template>
 <script>
 import Pagination from "@/components/Pagination";
+import checkRolePermission from "@/utils/permission";
 import moment from 'moment'
 import { deepClone } from '@/utils'
 export default {
   components: { Pagination },
   data() {
     return {
+      subsystem_code:"QUAN_LY_CA",
       temp: {
         _id:"",
         WorkingShiftCode: "",
@@ -401,26 +405,26 @@ export default {
       },
       rules: {
         WorkingShiftName: [
-          { required: true, message: "Yeu cau nhap ten ca", trigger: "change" }
+          { required: true, message: "Yêu cầu nhập tên ca", trigger: "change" }
         ],
         WorkingShiftCode: [
           {
             required: true,
-            message: "Yeu cau nhap ma ca",
+            message: "Yêu cầu nhập mã ca",
             trigger: "change"
           }
         ],
         StartTime: [
           {
             required: true,
-            message: "Gio bat dau khong duoc trong",
+            message: "Giờ bắt đầu không được trống",
             trigger: "change"
           }
         ],
         EndTime: [
           {
             required: true,
-            message: "Gio ket thuc khong duoc trong",
+            message: "Giờ kết thúc không được trống",
             trigger: "change"
           }
         ]
@@ -453,13 +457,16 @@ export default {
     this.getList();
   },
   methods: {
+    checkRolePermission,
     converttime(date){
       return moment(date, ["h:mm A"]).format("HH:mm");
     },
     editWorkingShift(scope) {
+      if(this.checkRolePermission("Edit",this.subsystem_code)){
       this.dialogType = 'edit'
       this.dialogFormVisible = true
       this.temp = deepClone(scope)
+      }
     },
     getList() {
       this.listLoading = true;
@@ -492,13 +499,13 @@ export default {
       this.getList();
     },
     addWorkingShift() {
-      // if(this.checkRolePermission("Add",this.subsystem_code)){
-      this.temp = {};
-      // this.src='http://localhost:4321/avatar/default_avatar.png'
-      this.temp.state = 1;
-      this.dialogFormVisible = true;
-      this.dialogType = 'add'
-      // }
+      if(this.checkRolePermission("Add",this.subsystem_code)){
+        this.temp = {};
+        // this.src='http://localhost:4321/avatar/default_avatar.png'
+        this.temp.state = 1;
+        this.dialogFormVisible = true;
+        this.dialogType = 'add'
+      }
     },
     deleteWorkingShift(data){
       if(!data){
@@ -511,16 +518,16 @@ export default {
           title: 'Success',
           dangerouslyUseHTMLString: true,
           message: `
-              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
-              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+              <div>Tên ca: ${this.temp.WorkingShiftName}</div>
+              <div>Mã ca: ${this.temp.WorkingShiftCode}</div>
             `,
           type: 'success'
         })
       })
     },
     confirmDeleteWorkingShift(row,$index) {
-      debugger
-      this.$confirm('Ban co chac muon xoa ca lam viec ?', 'Warning', {
+      if(this.checkRolePermission("Delete",this.subsystem_code)){
+      this.$confirm('Bạn có chắc muốn xóa ca làm việc ?', 'Cảnh báo', {
         confirmButtonText: 'Xác nhận',
         cancelButtonText: 'Hủy',
         type: 'warning'
@@ -534,6 +541,7 @@ export default {
           })
         })
         .catch(err => { console.error(err) })
+      }
     },
     saveWorkingShift() {
       this.temp.state = this.dialogType === 'edit' ? 2 : 1;
@@ -545,8 +553,8 @@ export default {
           title: 'Success',
           dangerouslyUseHTMLString: true,
           message: `
-              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
-              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+              <div>Tên ca: ${this.temp.WorkingShiftName}</div>
+              <div>Mã ca: ${this.temp.WorkingShiftCode}</div>
             `,
           type: 'success'
         })

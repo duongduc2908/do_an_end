@@ -1,5 +1,8 @@
 <template>
-  <div class="app-container">
+  <div
+    class="app-container"
+    v-if="checkRolePermission('View', subsystem_code, false)"
+  >
     <div class="filter-container">
       <div style="display: flex;justify-content: space-between">
         <div>
@@ -28,6 +31,7 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
+        v-if="checkRolePermission('Add', subsystem_code, false)"
       >
         Thêm mới
       </el-button>
@@ -65,13 +69,19 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="editPosition(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="editPosition(row)"
+            v-if="checkRolePermission('Edit', subsystem_code, false)"
+          >
             Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteJobPosition(row, $index)"
+            v-if="checkRolePermission('Delete', subsystem_code, false)"
           >
             Xóa
           </el-button>
@@ -116,9 +126,8 @@
           </el-form-item>
         </div>
         <div class="w-100">
-            
           <el-form-item label="Phòng ban" prop="OrganizationUnit">
-           <el-select
+            <el-select
               v-model="temp.OrganizationUnitID"
               multiple
               filterable
@@ -149,31 +158,28 @@
   </div>
 </template>
 <script>
+import  checkRolePermission from "@/utils/permission"
 import Pagination from "@/components/Pagination";
-import moment from "moment";
-import { deepClone } from "@/utils";
-
 export default {
   components: { Pagination },
   data() {
     return {
-      organization_unit:[],
+      subsystem_code: "QL_BO_PHAN",
+      organization_unit: [],
       temp: {
         _id: "",
-        JobPositionName:"",
-        JobPositionCode:"",
-        OrganizationUnitID:[],
+        JobPositionName: "",
+        JobPositionCode: "",
+        OrganizationUnitID: [],
         state: ""
       },
-      rules: {
-       
-      },
+      rules: {},
       dialogType: "",
       dialogFormVisible: false,
       listQuery: {
         page: 1,
         limit: 20,
-        text_search: undefined,
+        text_search: undefined
       },
       list: null,
       total: 0,
@@ -190,6 +196,7 @@ export default {
     this.getList();
   },
   methods: {
+    checkRolePermission,
     getList() {
       this.listLoading = true;
       let query_filter = `{"$and": [`;
@@ -215,67 +222,68 @@ export default {
         this.total = res.totals;
         this.listLoading = false;
       });
-      this.$store.dispatch(`organization_unit/getList`).then(res =>{
-        console.log(res)
-        this.organization_unit = res
-      })
+      this.$store.dispatch(`organization_unit/getList`).then(res => {
+        console.log(res);
+        this.organization_unit = res;
+      });
     },
     handleFilter() {
       this.listQuery.page = 1;
       this.getList();
     },
     addJobPosition() {
-      // if(this.checkRolePermission("Add",this.subsystem_code)){
-      this.temp = {};
-      // this.src='http://localhost:4321/avatar/default_avatar.png'
-      this.temp.state = 1;
-      this.dialogFormVisible = true;
-      this.dialogType = "add";
-      // }
+      if (this.checkRolePermission("Add", this.subsystem_code)) {
+        this.temp = {};
+        // this.src='http://localhost:4321/avatar/default_avatar.png'
+        this.temp.state = 1;
+        this.dialogFormVisible = true;
+        this.dialogType = "add";
+      }
     },
     deleteJobPosition(data) {
       if (!data) {
         return;
       }
       data.state = 3;
-      this.$store
-        .dispatch("job_position/saveJobPosition", data)
-        .then(res => {
-          this.getRoles();
-          this.$notify({
-            title: "Success",
-            dangerouslyUseHTMLString: true,
-            message: `
-              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
-              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+      this.$store.dispatch("job_position/saveJobPosition", data).then(res => {
+        this.getRoles();
+        this.$notify({
+          title: "Success",
+          dangerouslyUseHTMLString: true,
+          message: `
+              <div>Tên ca: ${this.temp.WorkingShiftName}</div>
+              <div>Mã ca: ${this.temp.WorkingShiftCode}</div>
             `,
-            type: "success"
-          });
+          type: "success"
         });
+      });
     },
     confirmDeleteJobPosition(row, $index) {
-      debugger;
-      this.$confirm("Ban co chac muon xoa ca lam viec ?", "Warning", {
-        confirmButtonText: "Confirm",
-        cancelButtonText: "Cancel",
-        type: "warning"
-      })
-        .then(async () => {
-          await this.deleteJobPosition(row);
-          this.list.splice($index, 1);
-          this.$message({
-            type: "success",
-            message: "Delete succed!"
-          });
+      if (this.checkRolePermission("Delete", this.subsystem_code)) {
+        this.$confirm("Ban co chac muon xoa ca lam viec ?", "Warning", {
+          confirmButtonText: "Confirm",
+          cancelButtonText: "Cancel",
+          type: "warning"
         })
-        .catch(err => {
-          console.error(err);
-        });
+          .then(async () => {
+            await this.deleteJobPosition(row);
+            this.list.splice($index, 1);
+            this.$message({
+              type: "success",
+              message: "Delete succed!"
+            });
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
     },
     saveJobPosition() {
       this.temp.state = this.dialogType === "edit" ? 2 : 1;
-      debugger
-      this.$store.dispatch("job_position/saveJobPosition", this.temp).then(res => {
+      debugger;
+      this.$store
+        .dispatch("job_position/saveJobPosition", this.temp)
+        .then(res => {
           this.getList();
           this.dialogFormVisible = false;
           this.$notify({
@@ -289,10 +297,12 @@ export default {
           });
         });
     },
-    editPosition(data){
-        this.dialogType = "edit"
+    editPosition(data) {
+      if (this.checkRolePermission("Edit", this.subsystem_code)) {
+        this.dialogType = "edit";
         this.dialogFormVisible = true;
-        this.temp = data
+        this.temp = data;
+      }
     }
   }
 };

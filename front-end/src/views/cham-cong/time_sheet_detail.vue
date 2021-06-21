@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div class="filter-container" v-if="checkRolePermission('View', subsystem_code, false)">
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
@@ -12,7 +12,7 @@
           />
           <el-select
             v-model="listQuery.OrganizationUnitID"
-            placeholder="Phong ban"
+            placeholder="Phòng ban"
             clearable
             class="filter-item"
             style="width: 200px"
@@ -27,7 +27,7 @@
           <el-select
             v-if="this.show_detail"
             v-model="listQuery.TimeSheet"
-            placeholder="Bang cham cong"
+            placeholder="Bảng chấm công"
             clearable
             class="filter-item"
             style="width: 220px"
@@ -44,7 +44,7 @@
             v-if="!this.show_detail"
             class="label_date"
             style="margin-left:20px"
-            >Tu ngay:
+            >Từ ngày:
           </label>
           <el-date-picker
             style="width: 200px;"
@@ -88,6 +88,7 @@
             style="margin-left: 10px;"
             type="primary"
             icon="el-icon-edit"
+            v-if="checkRolePermission('Add', subsystem_code, false)"
           >
             Them
           </el-button>
@@ -116,13 +117,13 @@
           style="margin-top:20px"
           :v-if="list"
         >
-          <el-table-column label="Ho ten" align="center" width="200px" fixed>
+          <el-table-column label="Họ tên" align="center" width="200px" fixed>
             <template slot-scope="{ row }">
               <span>{{ row.user_fullname }}</span>
             </template>
           </el-table-column>
           <el-table-column
-            label="Ma nhan vien"
+            label="Mã nhân viên"
             align="center"
             width="200px"
             fixed
@@ -131,15 +132,15 @@
               <span>{{ row.MaNV }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Tong hop" align="center" width="200px" fixed>
+          <el-table-column label="Tổng hợp" align="center" width="200px" fixed>
             <template slot-scope="{ row }">
               <span
                 >{{ row.totals_check_day
-                }}<span style="font-size:12px;color:red"> (thuc te)</span> /
+                }}<span style="font-size:12px;color:red"> (thực tế)</span> /
               </span>
               <span
                 >{{ row.totals_plan_day
-                }}<span style="font-size:12px;color:red"> (duoc giao)</span>
+                }}<span style="font-size:12px;color:red"> (được giao)</span>
               </span>
             </template>
           </el-table-column>
@@ -149,7 +150,7 @@
             width="200px"
             v-for="index in 31"
             :key="index"
-            :label="`Ngay ` + index"
+            :label="`Ngày ` + index"
           >
             <template slot-scope="{ row }">
               <div
@@ -161,8 +162,8 @@
               >
                 <div class="view_thu">{{ day.thu }}</div>
                 <div class="view_ngay">{{ day.day }}</div>
-                <div>Ca lam: {{ day.WorkingShiftName }}</div>
-                <div>Tong cong: {{ day.Working_days }}</div>
+                <div>Ca làm: {{ day.WorkingShiftName }}</div>
+                <div>Tổng công: {{ day.Working_days }}</div>
                 <hr />
               </div>
             </template>
@@ -190,7 +191,7 @@
           :v-if="list"
         >
           <el-table-column
-            label="Ten bang cham cong"
+            label="Tên bảng chấm công"
             align="center"
             width="250px"
           >
@@ -203,34 +204,34 @@
               </el-button>
             </template>
           </el-table-column>
-          <el-table-column label="Don vi" align="center" width="200px">
+          <el-table-column label="Phòng ban" align="center" width="200px">
             <template slot-scope="{ row }">
               <span>{{ row.OrganizationUnitName }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Chuc danh" align="center" width="200px">
+          <el-table-column label="Chức danh" align="center" width="200px">
             <template slot-scope="{ row }">
               <div v-for="job_pos in row.JobPositionNames" :key="job_pos">
                 {{ job_pos }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="Tu ngay" align="center">
+          <el-table-column label="Từ ngày" align="center">
             <template slot-scope="{ row }">
               <span>{{ row.FromDate | parseTime("{y}-{m}-{d}") }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Den ngay" align="center">
+          <el-table-column label="Đến ngày" align="center">
             <template slot-scope="{ row }">
               <span>{{ row.ToDate | parseTime("{y}-{m}-{d}") }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Nguoi tao" align="center" width="200px">
+          <el-table-column label="Người tạo" align="center" width="200px">
             <template slot-scope="{ row }">
               <span>{{ row.CreateBy }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Ngay tao" align="center" width="200px">
+          <el-table-column label="Ngày tạo" align="center" width="200px">
             <template slot-scope="{ row }">
               <span>{{ row.CreateDate | parseTime("{y}-{m}-{d}") }}</span>
             </template>
@@ -265,7 +266,7 @@
         width="1000px"
         height="1000px"
         :visible.sync="dialogAddVisible"
-        title="Them moi bang cham cong"
+        title="Thêm mới bảng chấm công"
       >
         <div class="flex" style="justify-content: space-between;">
           <el-form
@@ -276,16 +277,16 @@
           >
           <div class="flex">
             <div>
-              <el-form-item label="Ten bang cong " prop="full_name">
+              <el-form-item label="Tên bảng công " prop="full_name">
               <el-input  />
             </el-form-item>
             
             </div>
             <div>
-                <el-form-item label="Ho ten " prop="full_name">
+                <el-form-item label="Họ tên " prop="full_name">
                   <el-input  />
                 </el-form-item>
-                <el-form-item label="Ten dang nhap " prop="user_name">
+                <el-form-item label="Tên đăng nhập " prop="user_name">
                   <el-input  />
                 </el-form-item>
                 <el-form-item label="Email " prop="email">
@@ -307,6 +308,7 @@
 <script>
 import Pagination from "@/components/Pagination";
 import moment from "moment";
+import checkRolePermission from "@/utils/permission";
 export default {
   components: { Pagination },
   data() {
@@ -322,6 +324,7 @@ export default {
         start_date: undefined,
         to_date: undefined
       },
+      subsystem_code: "BANG_CHAM_CONG",
       param: {},
       listLoading: false,
       list: null,
@@ -339,6 +342,7 @@ export default {
     this.getList();
   },
   methods: {
+    checkRolePermission,
     handleFilter() {
       this.listQuery.page = 1;
       this.getList();
@@ -425,15 +429,17 @@ export default {
     hander_click_box(day) {
       this.box_click = day;
       this.view_cham_cong =
-        "Cham cong " +
+        "Chấm công" +
         day[0].thu +
-        " ngay " +
+        " ngày " +
         moment(day[0].check_in_date).format("DD-MM-YYYY");
       this.view_cham_cong = this.view_cham_cong.toUpperCase();
       this.dialogFormVisible = true;
     },
     addTimeSheet(){
+      if(this.checkRolePermission("Add",this.subsystem_code)){
         this.dialogAddVisible=true
+      }
     }
   }
 };

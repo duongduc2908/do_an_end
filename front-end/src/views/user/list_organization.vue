@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div
+      class="filter-container"
+      v-if="checkRolePermission('View', subsystem_code, false)"
+    >
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
@@ -28,8 +31,9 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
+        v-if="checkRolePermission('Add', subsystem_code, false)"
       >
-       Thêm mới
+        Thêm mới
       </el-button>
     </div>
 
@@ -60,13 +64,19 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="editPosition(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="editPosition(row)"
+            v-if="checkRolePermission('Edit', subsystem_code, false)"
+          >
             Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteOrganizationUnit(row, $index)"
+            v-if="checkRolePermission('Delete', subsystem_code, false)"
           >
             Xóa
           </el-button>
@@ -116,7 +126,7 @@
           Hủy
         </el-button>
         <el-button type="primary" @click="saveOrganizationUnit">
-         Xác nhận
+          Xác nhận
         </el-button>
       </div>
     </el-dialog>
@@ -124,25 +134,25 @@
 </template>
 <script>
 import Pagination from "@/components/Pagination";
+import checkRolePermission from "@/utils/permission";
 export default {
   components: { Pagination },
   data() {
     return {
+      subsystem_code: "QL_PHONG_BAN",
       temp: {
         _id: "",
-        OrganizationUnitName:"",
-        OrganizationUnitCode:"",
+        OrganizationUnitName: "",
+        OrganizationUnitCode: "",
         state: ""
       },
-      rules: {
-       
-      },
+      rules: {},
       dialogType: "",
       dialogFormVisible: false,
       listQuery: {
         page: 1,
         limit: 20,
-        text_search: undefined,
+        text_search: undefined
       },
       list: null,
       total: 0,
@@ -159,6 +169,7 @@ export default {
     this.getList();
   },
   methods: {
+    checkRolePermission,
     getList() {
       this.listLoading = true;
       let query_filter = `{"$and": [`;
@@ -178,23 +189,25 @@ export default {
         query_filter: query_filter
       };
       console.log(param);
-      this.$store.dispatch(`organization_unit/getOrganizationUnits`, param).then(res => {
-        this.list = res.results;
-        this.total = res.totals;
-        this.listLoading = false;
-      });
+      this.$store
+        .dispatch(`organization_unit/getOrganizationUnits`, param)
+        .then(res => {
+          this.list = res.results;
+          this.total = res.totals;
+          this.listLoading = false;
+        });
     },
     handleFilter() {
       this.listQuery.page = 1;
       this.getList();
     },
     addOrganizationUnit() {
-      // if(this.checkRolePermission("Add",this.subsystem_code)){
-      this.temp = {};
-      this.temp.state = 1;
-      this.dialogFormVisible = true;
-      this.dialogType = "add";
-      // }
+      if (this.checkRolePermission("Add", this.subsystem_code)) {
+        this.temp = {};
+        this.temp.state = 1;
+        this.dialogFormVisible = true;
+        this.dialogType = "add";
+      }
     },
     deleteOrganizationUnit(data) {
       if (!data) {
@@ -209,36 +222,39 @@ export default {
             title: "Success",
             dangerouslyUseHTMLString: true,
             message: `
-              <div>Ten ca: ${this.temp.WorkingShiftName}</div>
-              <div>Ma ca: ${this.temp.WorkingShiftCode}</div>
+              <div>Tên ca: ${this.temp.WorkingShiftName}</div>
+              <div>Mã ca: ${this.temp.WorkingShiftCode}</div>
             `,
             type: "success"
           });
         });
     },
     confirmDeleteOrganizationUnit(row, $index) {
-      debugger;
-      this.$confirm("Ban co chac muon xoa ca lam viec ?", "Warning", {
-        confirmButtonText: "Confirm",
-        cancelButtonText: "Cancel",
-        type: "warning"
-      })
-        .then(async () => {
-          await this.deleteOrganizationUnit(row);
-          this.list.splice($index, 1);
-          this.$message({
-            type: "success",
-            message: "Delete succed!"
-          });
+      if (this.checkRolePermission("Delete", this.subsystem_code)) {
+        this.$confirm("Ban co chac muon xoa ca lam viec ?", "Warning", {
+          confirmButtonText: "Confirm",
+          cancelButtonText: "Cancel",
+          type: "warning"
         })
-        .catch(err => {
-          console.error(err);
-        });
+          .then(async () => {
+            await this.deleteOrganizationUnit(row);
+            this.list.splice($index, 1);
+            this.$message({
+              type: "success",
+              message: "Delete succed!"
+            });
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
     },
     saveOrganizationUnit() {
       this.temp.state = this.dialogType === "edit" ? 2 : 1;
-      debugger
-      this.$store.dispatch("organization_unit/saveOrganizationUnit", this.temp).then(res => {
+      debugger;
+      this.$store
+        .dispatch("organization_unit/saveOrganizationUnit", this.temp)
+        .then(res => {
           this.getList();
           this.dialogFormVisible = false;
           this.$notify({
@@ -252,10 +268,12 @@ export default {
           });
         });
     },
-    editPosition(data){
-        this.dialogType = "edit"
+    editPosition(data) {
+      if (this.checkRolePermission("Edit", this.subsystem_code)) {
+        this.dialogType = "edit";
         this.dialogFormVisible = true;
-        this.temp = data
+        this.temp = data;
+      }
     }
   }
 };
@@ -264,11 +282,11 @@ export default {
 .el-form-item__content {
   // margin-left: 24px !important;
   margin: 0px !important;
-  width: calc(100% - 120px);
+  width: calc(100% - 130px);
   display: flex;
 }
 .el-form-item__label {
-  width: 120px !important;
+  width: 130px !important;
 }
 .el-dialog {
   margin-top: 5vh !important;

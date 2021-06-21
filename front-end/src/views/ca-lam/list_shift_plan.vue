@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div
+      class="filter-container"
+      v-if="checkRolePermission('View', subsystem_code, false)"
+    >
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
@@ -27,6 +30,7 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
+        v-if="checkRolePermission('Add', subsystem_code, false)"
       >
         Thêm mới
       </el-button>
@@ -40,27 +44,27 @@
       highlight-current-row
       style="margin-top:20px"
     >
-      <el-table-column label="Ca lam viec" align="center">
+      <el-table-column label="Ca làm việc" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.ShiftPlanName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Tu ngay" align="center">
+      <el-table-column label="Từ ngày" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.FromDate | parseTime("{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Den ngay" align="center">
+      <el-table-column label="Đến ngày" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.ToDate | parseTime("{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Tao boi" align="center">
+      <el-table-column label="Tạo bởi" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.CreateBy }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Ngay tao" align="center">
+      <el-table-column label="Ngày tạo" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.CreateDate | parseTime("{y}-{m}-{d}") }}</span>
         </template>
@@ -72,16 +76,19 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button v-if="!row.IsTrain" size="mini" type="success">
-            Xem lich
-          </el-button>
-          <el-button type="primary" size="mini" @click="editShiftPlan(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="editShiftPlan(row)"
+            v-if="checkRolePermission('Edit', subsystem_code, false)"
+          >
             Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteShiftPlan(row, $index)"
+            v-if="checkRolePermission('Delete', subsystem_code, false)"
           >
             Xóa
           </el-button>
@@ -125,7 +132,7 @@
           <el-form-item
             prop="list_working_shift_selected"
             style="margin-bottom:10px"
-            label="Danh sach ca"
+            label="Danh sách ca"
           >
             <el-select
               v-model="detailDataX.WorkingShiftIDs"
@@ -147,7 +154,7 @@
         </div>
 
         <div>
-          <h2>Thoi gian ap dung</h2>
+          <h2>Thời gian áp dụng</h2>
         </div>
         <div style="margin-bottom:20px">
           <el-radio-group v-model="detailDataX.DateApplyType">
@@ -155,36 +162,37 @@
               v-for="item in optionsRadio"
               :key="item.value"
               :label="item.value"
-            >{{item.label}}</el-radio>
+              >{{ item.label }}</el-radio
+            >
           </el-radio-group>
         </div>
         <div v-if="detailDataX.DateApplyType" class="flex">
-          <el-form-item label="Ngay bat dau" prop="FromDate">
+          <el-form-item label="Ngày bắt đầu" prop="FromDate">
             <el-date-picker
               v-model="detailDataX.FromDate"
               type="date"
-              placeholder="Ngay bat dau"
+              placeholder="Ngày bắt đầu"
               value-format="yyyy-MM-dd"
               format="yyyy-MM-dd"
             />
           </el-form-item>
           <el-form-item
             v-if="detailDataX.DateApplyType == 1"
-            label="Ngay ket thuc"
+            label="Ngày kết thúc"
             style="margin-left:100px"
             prop="ToDate"
           >
             <el-date-picker
               v-model="detailDataX.ToDate"
               type="date"
-              placeholder="Ngay ket thuc"
+              placeholder="Ngày kết thúc"
               value-format="yyyy-MM-dd"
               format="yyyy-MM-dd"
             />
           </el-form-item>
         </div>
         <div v-if="detailDataX.DateApplyType">
-          <el-form-item label="Lap theo">
+          <el-form-item label="Lặp theo">
             <div
               style="width:700px;height: fit-content(20em);background:#f0f2f5"
             >
@@ -208,9 +216,9 @@
                     </el-form-item>
                   </div>
                   <div v-if="detailDataX.RepeatType != 1" class="flex">
-                    <el-form-item style="margin-left:10px" label="Chu ky lap">
+                    <el-form-item style="margin-left:10px" label="Chu kỳ lặp">
                     </el-form-item>
-                    <el-input-number  
+                    <el-input-number
                       v-model="num_repeat"
                       placeholder="empty"
                       :min="1"
@@ -218,7 +226,7 @@
                     ></el-input-number>
                     <el-form-item
                       style="margin-left:10px"
-                      :label="detailDataX.RepeatType == 2 ? 'tuan' : 'thang'"
+                      :label="detailDataX.RepeatType == 2 ? 'Tuần' : 'Tháng'"
                       prop="num_repeat"
                     >
                     </el-form-item>
@@ -231,11 +239,11 @@
               >
                 <el-radio-group v-model="IsWorkingDay">
                   <div class="flex">
-                    <el-radio
-                      :label="false"
-                      style="margin-top:10px"
-                    >Chu ky lap</el-radio>
-                    <el-input-number :class="IsWorkingDay ? 'disable': ''"
+                    <el-radio :label="false" style="margin-top:10px"
+                      >Chu ky lap</el-radio
+                    >
+                    <el-input-number
+                      :class="IsWorkingDay ? 'disable' : ''"
                       v-model="num_repeat"
                       placeholder="empty"
                       :min="1"
@@ -243,13 +251,15 @@
                     ></el-input-number>
                     <el-form-item
                       style="margin-left:10px"
-                      label="Ngay"
+                      label="Ngày"
                       prop="ModifiedDate"
                     >
                     </el-form-item>
                   </div>
                   <div style="margin:20px 0px 40px 0px">
-                    <el-radio :label="true">Ngay lam viec thu 2 den thu 6</el-radio>
+                    <el-radio :label="true"
+                      >Ngày làm việc từ thứ 2 đến thứ 6</el-radio
+                    >
                   </div>
                 </el-radio-group>
               </div>
@@ -257,12 +267,14 @@
                 <el-radio-group v-model="IsDayOfMonth">
                   <div class="flex" v-if="this.detailDataX.RepeatType == 3">
                     <div style="margin:10px 10px 0px 0px">
-                      <el-radio key="0" :label="false" value="false">Vao</el-radio>
+                      <el-radio key="0" :label="false" value="false"
+                        >Vào</el-radio
+                      >
                     </div>
-                    <div :class="IsDayOfMonth ? 'disable': ''">
+                    <div :class="IsDayOfMonth ? 'disable' : ''">
                       <el-select
                         class="select-role"
-                        placeholder="Chon mot"
+                        placeholder="Chọn"
                         style="width:205px"
                         v-model="DayOfWeekNumber"
                       >
@@ -275,11 +287,14 @@
                         </el-option>
                       </el-select>
                     </div>
-                    <div :class="IsDayOfMonth ? 'disable': ''" style="margin-left:35px">
+                    <div
+                      :class="IsDayOfMonth ? 'disable' : ''"
+                      style="margin-left:35px"
+                    >
                       <el-select
                         v-model="WeekOfMonth"
                         class="select-role"
-                        placeholder="Chon mot"
+                        placeholder="Chọn"
                         style="width:220px"
                       >
                         <el-option
@@ -310,14 +325,11 @@
                     style="margin-top:40px"
                     v-if="this.detailDataX.RepeatType == 3"
                   >
-                    <div class="flex" >
-                      <div style="margin:10px 10px 0px 0pxn" >
-                        <el-radio
-                          key="0"
-                          :label="true"
-                        >Vao ngay</el-radio>
+                    <div class="flex">
+                      <div style="margin:10px 10px 0px 0pxn">
+                        <el-radio key="0" :label="true">Vào ngày</el-radio>
                       </div>
-                      <div :class="IsDayOfMonth ? '': 'disable'">
+                      <div :class="IsDayOfMonth ? '' : 'disable'">
                         <el-input-number
                           style="width:168px !important"
                           v-model="DayOfMonth"
@@ -334,7 +346,7 @@
           </el-form-item>
         </div>
         <div>
-          <h2>Doi tuong ap dung</h2>
+          <h2>Đối tượng áp dụng</h2>
         </div>
         <div>
           <div>
@@ -342,10 +354,8 @@
               v-model="objectApplyType"
               @change="object_apply_type"
             >
-              <el-radio :label="true" >Co cau to chuc</el-radio>
-              <el-radio
-                :label="false"
-              >Danh sach nhan vien</el-radio>
+              <el-radio :label="true">Cơ cấu tổ chức</el-radio>
+              <el-radio :label="false">Danh sách nhân viên</el-radio>
             </el-radio-group>
           </div>
           <div
@@ -360,7 +370,7 @@
                 multiple
                 filterable
                 default-first-option
-                placeholder="Chon doi tuong"
+                placeholder="Chọn đối tượng"
                 style="width: 100%;"
               >
                 <el-option
@@ -380,10 +390,10 @@
           ><span style="font-size:14px; "> Xem trước</span></el-button
         >
         <el-button @click="dialogFormVisible = false">
-          Huy
+          Hủy
         </el-button>
         <el-button type="primary" @click="handleClickApply">
-          Xac nhan
+          Xác nhận
         </el-button>
       </div>
       <div v-if="schedulerData_Array && schedulerData_Array.length">
@@ -396,12 +406,12 @@
           highlight-current-row
           style="margin-top:20px"
         >
-          <el-table-column label="Ca lam viec" align="center">
+          <el-table-column label="Ca làm việc" align="center">
             <template slot-scope="{ row }">
               <span>{{ row.text }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="Ngay lam" align="center">
+          <el-table-column label="Ngày làm" align="center">
             <template slot-scope="{ row }">
               <span>{{ row.startDate | parseTime("{y}-{m}-{d}") }}</span>
             </template>
@@ -421,11 +431,13 @@
 <script>
 import moment from "moment";
 import Pagination from "@/components/Pagination"; // secondary package based on el-pagination
+import checkRolePermission from "@/utils/permission";
 export default {
   name: "ShiftPlan",
   components: { Pagination },
   data() {
     return {
+      subsystem_code:"PHAN_CA_CHI_TIET",
       tableKey: 0,
       daymax: 0,
       listLoading: true,
@@ -456,7 +468,7 @@ export default {
         RepeatType: [
           {
             required: true,
-            message: "Chon loai lap",
+            message: "Chọn loại lặp",
             trigger: "change"
           }
         ],
@@ -477,7 +489,7 @@ export default {
           }
         ]
       },
-      organization_unit:[],
+      organization_unit: [],
       dialogFormVisible: false,
       listQuery: {
         page: 1,
@@ -533,11 +545,11 @@ export default {
       // List giá trị radio Thời gian áp dụng
       optionsRadio: [
         {
-          label: "Tu ngay den ngay",
+          label: "Từ ngày đến ngày",
           value: 1
         },
         {
-          label: "Khong co ngay ket thuc",
+          label: "Không có ngày kết thúc",
           value: 2
         }
       ],
@@ -545,56 +557,56 @@ export default {
       cycleValueBox: [
         {
           GroupOfEmployeeID: 1,
-          GroupOfEmployeeName: "Ngay"
+          GroupOfEmployeeName: "Ngày"
         },
         {
           GroupOfEmployeeID: 2,
-          GroupOfEmployeeName: "Tuan"
+          GroupOfEmployeeName: "Tuần"
         },
         {
           GroupOfEmployeeID: 3,
-          GroupOfEmployeeName: "Thang"
+          GroupOfEmployeeName: "Tháng"
         }
       ],
       // List giá trị lặp theo tháng
       cycleMonthBox: [
         {
           MonthID: 1,
-          MonthOrder: "Ngay dau tien cua thang"
+          MonthOrder: "Ngày đầu tiên của tháng"
         },
         {
           MonthID: 5,
-          MonthOrder: "Ngay cuoi cung cua thang"
+          MonthOrder: "Ngày cuối cùng của tháng"
         }
       ],
       listDayRadioBox: [
         {
           WeekDayID: 1,
-          WeekDayName: "Thu 2"
+          WeekDayName: "Thứ 2"
         },
         {
           WeekDayID: 2,
-          WeekDayName: "Thu 3"
+          WeekDayName: "Thứ 3"
         },
         {
           WeekDayID: 3,
-          WeekDayName: "Thu 4"
+          WeekDayName: "Thứ 4"
         },
         {
           WeekDayID: 4,
-          WeekDayName: "Thu 5"
+          WeekDayName: "Thứ 5"
         },
         {
           WeekDayID: 5,
-          WeekDayName: "Thu 6"
+          WeekDayName: "Thứ 6"
         },
         {
           WeekDayID: 6,
-          WeekDayName: "Thu 7"
+          WeekDayName: "Thứ 7"
         },
         {
           WeekDayID: 0,
-          WeekDayName: "Chu nhat"
+          WeekDayName: "Chủ nhật"
         }
       ],
       listDayCheckBox: [
@@ -617,7 +629,7 @@ export default {
       validateStartTime: {},
       validateToTime: {},
       saveLoading: false,
-      schedulerData:[],
+      schedulerData: [],
       total: 0
     };
   },
@@ -656,7 +668,6 @@ export default {
     }
   },
   created() {
-    debugger;
     let currentDay = new Date();
     this.listDayinCurrentMonth = this.getDaysInMonth(
       currentDay.getMonth(),
@@ -677,11 +688,19 @@ export default {
     this.getList();
   },
   methods: {
-    handle_pagination(){
-      let data_list = this.schedulerData_Array
-      console.log((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit));
-      console.log(parseInt(this.listQuery.page)*parseInt(this.listQuery.limit));
-      this.schedulerData = data_list.slice((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit),parseInt(this.listQuery.page)*parseInt(this.listQuery.limit));
+    checkRolePermission,
+    handle_pagination() {
+      let data_list = this.schedulerData_Array;
+      console.log(
+        (parseInt(this.listQuery.page) - 1) * parseInt(this.listQuery.limit)
+      );
+      console.log(
+        parseInt(this.listQuery.page) * parseInt(this.listQuery.limit)
+      );
+      this.schedulerData = data_list.slice(
+        (parseInt(this.listQuery.page) - 1) * parseInt(this.listQuery.limit),
+        parseInt(this.listQuery.page) * parseInt(this.listQuery.limit)
+      );
     },
     /**
      * Gán dữ liệu RepeatConfig cho các biến lưu giá trị lặp
@@ -732,7 +751,8 @@ export default {
           default:
             break;
         }
-        this.objectApplyType = this.detailDataX.ObjectType == "1" ? true  : false;
+        this.objectApplyType =
+          this.detailDataX.ObjectType == "1" ? true : false;
         // this.detailData = JSON.parse(JSON.stringify(this.detailDataX));
         // this.detailData.RepeatConfig = JSON.stringify(config);
         // Lấy data danh sách ca đã chọn
@@ -743,35 +763,77 @@ export default {
       }
     },
     editShiftPlan(data) {
-      this.detailDataX = Object.assign({}, data);
-      this.detailDataX.state = 2;
-      this.detailDataX.RepeatType = parseInt(this.detailDataX.RepeatType);
-      this.detailDataX.DateApplyType = parseInt(this.detailDataX.DateApplyType);
-      this.convertRepeatConfig(this.detailDataX);
-      this.dialogFormVisible = true;
-      this.schedulerData_Array = [];
-      this.object_apply_type();
+      if (this.checkRolePermission("Edit", this.subsystem_code)) {
+        this.detailDataX = Object.assign({}, data);
+        this.detailDataX.state = 2;
+        this.detailDataX.RepeatType = parseInt(this.detailDataX.RepeatType);
+        this.detailDataX.DateApplyType = parseInt(
+          this.detailDataX.DateApplyType
+        );
+        this.convertRepeatConfig(this.detailDataX);
+        this.dialogFormVisible = true;
+        this.schedulerData_Array = [];
+        this.object_apply_type();
+      }
     },
-    confirmDeleteShiftPlan() {},
+    deleteShiftPlan(data) {
+      if (!data) {
+        return;
+      }
+      data.state = 3;
+      this.$store.dispatch("shift_plan/deleteShiftPlan", data).then(res => {
+        this.getList();
+        this.$notify({
+          title: "Success",
+          dangerouslyUseHTMLString: true,
+          message: `
+              <div>Tên phân ca: ${this.temp.WorkingShiftName}</div>
+              <div>Mã phân ca: ${this.temp.WorkingShiftCode}</div>
+            `,
+          type: "success"
+        });
+      });
+    },
+    confirmDeleteShiftPlan(row) {
+      if (this.checkRolePermission("Delete", this.subsystem_code)) {
+        this.$confirm("Bạn có chắc muốn xóa phân ca ?", "Cảnh báo", {
+          confirmButtonText: "Xác nhận",
+          cancelButtonText: "Hủy",
+          type: "warning"
+        })
+          .then(async () => {
+            await this.deleteShiftPlan(row);
+            this.list_shift_plan.splice($index, 1);
+            this.$message({
+              type: "success",
+              message: "Delete succed!"
+            });
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
+    },
     handleaddShiftPlan() {
-      // if(this.checkRolePermission("Add",this.subsystem_code)){
-      this.detailDataX = {};
-      this.list_object_selected=null
-      this.detailDataX.State = 1;
-      this.dialogFormVisible = true;
-      this.objectApplyType = Boolean;
-      this.data_object = null
+      if (this.checkRolePermission("Add", this.subsystem_code)) {
+        this.detailDataX = {};
+        this.list_object_selected = null;
+        this.detailDataX.State = 1;
+        this.dialogFormVisible = true;
+        this.objectApplyType = Boolean;
+        this.data_object = null;
+      }
     },
     object_apply_type() {
       this.data_object = [];
       this.list_object_selected = [];
       let param = {};
       if (this.objectApplyType) {
-        debugger
+        debugger;
         // this.detailDataX.ObjectType = 1;
-        this.$store.dispatch(`organization_unit/getList`).then(res =>{
-          this.data_object = res
-        })
+        this.$store.dispatch(`organization_unit/getList`).then(res => {
+          this.data_object = res;
+        });
         this.list_object_selected = this.detailDataX.OrganizationUnitIDs;
       } else {
         this.list_object_selected = this.detailDataX.EmployeeIDs;
@@ -866,21 +928,21 @@ export default {
         this.detailDataX.FromDate > this.detailDataX.ToDate &&
         this.detailDataX.DateApplyType == 1
       ) {
-        this.$notify._error("Ngay bat dau lon hon ngay ket thuc");
+        this.$notify._error("Ngày bắt đầu lớn hơn ngày kết thúc ");
         return false;
       }
       if (
         this.detailDataX.ObjectType == 1 &&
         this.detailDataX.OrganizationUnitIDs.length == 0
       ) {
-        this.$notify._error("Chua chon doi tuong ap dung");
+        this.$notify._error("Chưa chọn đối tượng áp dụng");
         return false;
       }
       if (
         this.detailDataX.ObjectType == 2 &&
         this.detailDataX.EmployeeIDs.length == 0
       ) {
-        this.$notify._error("Chua chon doi tuong ap dung");
+        this.$notify._error("Chưa chọn đối tượng áp dụng");
         return false;
       }
       this.$store
@@ -888,7 +950,7 @@ export default {
         .then(res => {
           console.log(res);
         });
-      this.dialogFormVisible = false
+      this.dialogFormVisible = false;
       this.getList();
     },
     handleClickView() {
@@ -930,8 +992,11 @@ export default {
           break;
       }
       this.createShiftPlan(this.detailDataX.RepeatType);
-      this.generateSchedulerData()
-      this.schedulerData = this.schedulerData_Array.slice((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit),parseInt(this.listQuery.page)*parseInt(this.listQuery.limit))
+      this.generateSchedulerData();
+      this.schedulerData = this.schedulerData_Array.slice(
+        (parseInt(this.listQuery.page) - 1) * parseInt(this.listQuery.limit),
+        parseInt(this.listQuery.page) * parseInt(this.listQuery.limit)
+      );
       this.total = this.schedulerData_Array.length;
     },
     /**
@@ -941,57 +1006,57 @@ export default {
     handleClickApply() {
       // this.$refs["dataForm"].validate(valid => {
       //   if (valid) {
-          // xu ly doi tuong ap dung
-          // if (this.detailDataX.DateApplyType == "Tu ngay den ngay") {
-          //   this.detailDataX.DateApplyType = 1;
-          // } else {
-          //   this.detailDataX.DateApplyType = 2;
-          // }
-          if (this.objectApplyType) {
-            this.detailDataX.OrganizationUnitIDs = this.list_object_selected;
+      // xu ly doi tuong ap dung
+      // if (this.detailDataX.DateApplyType == "Tu ngay den ngay") {
+      //   this.detailDataX.DateApplyType = 1;
+      // } else {
+      //   this.detailDataX.DateApplyType = 2;
+      // }
+      if (this.objectApplyType) {
+        this.detailDataX.OrganizationUnitIDs = this.list_object_selected;
+      } else {
+        this.detailDataX.EmployeeIDs = this.list_object_selected;
+      }
+      switch (this.detailDataX.RepeatType) {
+        case 1:
+          this.saveRepeatConfigDay();
+          break;
+        case 2:
+          this.saveRepeatConfigWeek();
+          break;
+        case 3:
+          this.saveRepeatConfigMonth();
+          break;
+        default:
+          break;
+      }
+      if (this.detailDataX.state != 2) {
+        this.addShiftPlan();
+      }
+      if (this.detailDataX.state == 2) {
+        if (
+          JSON.stringify(this.detailDataX) != JSON.stringify(this.detailData)
+        ) {
+          let title =
+            "<b>Luu y:</b> Cac thiet lap cu cua bang phan ca nay se khong duoc luu lai";
+          if (new Date(this.fromDate).getTime() < new Date().getTime()) {
+            title =
+              "Thoi gian phan ca da phat sinh du lieu cham cong.Ban co chac chan muon thay doi khong?";
           }
-          else {
-            this.detailDataX.EmployeeIDs = this.list_object_selected;
-          }
-          switch (this.detailDataX.RepeatType) {
-            case 1:
-              this.saveRepeatConfigDay();
-              break;
-            case 2:
-              this.saveRepeatConfigWeek();
-              break;
-            case 3:
-              this.saveRepeatConfigMonth();
-              break;
-            default:
-              break;
-          }
-          if (this.detailDataX.state != 2) {
-            this.addShiftPlan();
-          }
-          if (this.detailDataX.state == 2) {
-            if (
-              JSON.stringify(this.detailDataX) !=
-              JSON.stringify(this.detailData)
-            ) {
-              let title =
-                "<b>Luu y:</b> Cac thiet lap cu cua bang phan ca nay se khong duoc luu lai";
-              if (new Date(this.fromDate).getTime() < new Date().getTime()) {
-                title =
-                  "Thoi gian phan ca da phat sinh du lieu cham cong.Ban co chac chan muon thay doi khong?";
-              }
-              this.$confirm(`Ban co muon cap nhap bang phan ca ?`, 'Thong bao', {
-                confirmButtonText: 'Cap nhap',
-                cancelButtonText: 'Huy',
-                type: 'warning'
-              })
-                .then(async() => {
-                  await this.addShiftPlan()
-                })
-                .catch(err => { console.error(err) })
-            } else this.backToTimeWorking();
-          }
-          this.createShiftPlan(this.detailDataX.RepeatType);
+          this.$confirm(`Ban co muon cap nhap bang phan ca ?`, "Thong bao", {
+            confirmButtonText: "Cap nhap",
+            cancelButtonText: "Huy",
+            type: "warning"
+          })
+            .then(async () => {
+              await this.addShiftPlan();
+            })
+            .catch(err => {
+              console.error(err);
+            });
+        } else this.backToTimeWorking();
+      }
+      this.createShiftPlan(this.detailDataX.RepeatType);
       //   }
       // });
     },
@@ -1071,11 +1136,10 @@ export default {
         this.listShiftScheduler = [];
         this.list_object_selected.forEach(element => {
           this.data_object.forEach(obj => {
-            if(obj.key == element){
+            if (obj.key == element) {
               this.listShiftScheduler.push(obj.display_name);
             }
           });
-          
         });
         this.schedulerData_Array = [];
         this.listShiftScheduler.forEach(el => {
@@ -1253,14 +1317,14 @@ export default {
         this.validateStartTime = JSON.parse(
           JSON.stringify({
             isValid: true,
-            message: "Ngay bat dau phai nho hon ngay ket thuc",
+            message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc",
             rules: "custom"
           })
         );
         this.validateToTime = JSON.parse(
           JSON.stringify({
             isValid: true,
-            message: "Ngay ket thuc phai lon hon ngay bat dau",
+            message: "Ngày kết thúc phải lớn hơn ngày bắt đầu",
             rules: "custom"
           })
         );

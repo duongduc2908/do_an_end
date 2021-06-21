@@ -25,13 +25,13 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
-            <el-dropdown-item>Profile</el-dropdown-item>
+            <el-dropdown-item>Cá nhân</el-dropdown-item>
           </router-link>
           <router-link to="/">
-            <el-dropdown-item>Dashboard</el-dropdown-item>
+            <el-dropdown-item>Trang chủ</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">Log Out</span>
+            <span style="display:block;">Đăng xuất</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>

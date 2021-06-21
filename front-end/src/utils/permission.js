@@ -31,7 +31,7 @@ export default function checkRolePermission(action, subsystem_code, isShowMessag
     this.$notify({
       title: 'Thông báo',
       dangerouslyUseHTMLString: true,
-      message: `Ban khong co quyen thuc hien chuc nang nay`,
+      message: `Bạn không có quyền thực hiện thao tác này`,
       type: 'error'
     })
   }

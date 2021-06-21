@@ -1,42 +1,42 @@
 <template>
-  <div class="app-container">
-    <el-button type="primary" @click="handleAddRole">New Role</el-button>
+  <div class="app-container" v-if="checkRolePermission('View', subsystem_code, false)">
+    <el-button type="primary" @click="handleAddRole" v-if="checkRolePermission('Add', subsystem_code, false)">Thêm quyền</el-button>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="Role Key" width="220">
+      <el-table-column align="center" label="Mã quyền" width="220">
         <template slot-scope="scope">
           {{ scope.row.role_id }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Role Name" width="220">
+      <el-table-column align="center" label="Tên quyền" width="220">
         <template slot-scope="scope">
           {{ scope.row.role_name }}
         </template>
       </el-table-column>
-      <el-table-column align="header-center" label="Description">
+      <el-table-column align="header-center" label="Mô tả">
         <template slot-scope="scope">
           {{ scope.row.role_description }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Operations">
+      <el-table-column align="center" label="Hành động">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope)">Edit</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>
+          <el-button type="primary" size="small" v-if="checkRolePermission('Edit', subsystem_code, false)" @click="handleEdit(scope)">Sửa</el-button>
+          <el-button type="danger" size="small" v-if="checkRolePermission('Delete', subsystem_code, false)" @click="handleDelete(scope)">Xóa</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-dialog width="900px" v-if="dialogVisible" :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
+    <el-dialog width="900px" v-if="dialogVisible" :visible.sync="dialogVisible" :title="dialogType==='edit'?'Sửa quyền':'Thêm quyền'">
       <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="Name">
-          <el-input v-model="role.role_name" placeholder="Role Name" />
+        <el-form-item label="Tên quyền">
+          <el-input v-model="role.role_name" placeholder="Tên quyền" />
         </el-form-item>
-        <el-form-item label="Desc">
+        <el-form-item label="Mô tả">
           <el-input
             v-model="role.role_description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="Role Description"
+            placeholder="Mô tả quyền"
           />
         </el-form-item>
         <el-form-item label="Menus">
@@ -51,7 +51,7 @@
               <div class="flex">
                 <el-checkbox v-model="item.isCheck" @change="changePermissionParent(item)" :class="{'m-l-24':item.parent_code}">
                 </el-checkbox>
-                <div class="m-l-8 w-130">{{ item.subsystem_name }}</div>
+                <div class="m-l-8 w-135">{{ item.subsystem_name }}</div>
               </div>
               <div class="flex" v-for="(item2,index2) in item.permission_code" :key="index2" :class="[item.parent_code ? 'm-l-48':'m-l-24']">
                 <el-checkbox v-model="item2.isCheck" @change="changePermission(item2,item)">
@@ -80,6 +80,7 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
+import checkRolePermission from "@/utils/permission";
 // import _ from 'lodash'
 // import { MultiSelect } from 'vue-search-select'
 // import 'vue-search-select/dist/VueSearchSelect.css'
@@ -95,6 +96,7 @@ export default {
   // components:{MultiSelect},
   data() {
     return {
+      subsystem_code: "DANH_SACH_QUYEN",
       current_parent_code:"",
       routes: [],
       rolesList: [],
@@ -133,6 +135,7 @@ export default {
     
   },
   methods: {
+    checkRolePermission,
     // onSelect (items, lastSelectItem) {
     //     this.items = items
     //     this.lastSelectItem = lastSelectItem
@@ -292,6 +295,7 @@ export default {
       return data
     },
     handleAddRole() {
+      if(this.checkRolePermission("Add",this.subsystem_code)){
       this.list_permission = []
       this.getMenu()
       this.role = Object.assign({}, defaultRole)
@@ -302,8 +306,10 @@ export default {
       this.dialogVisible = true
       // this.getListUser()
       // this.items = []
+      }
     },
     handleEdit(scope) {
+      if(this.checkRolePermission("Edit",this.subsystem_code)){
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.getListUser()
@@ -339,9 +345,11 @@ export default {
       //   // set checked state of a node not affects its father and child nodes
       //   this.checkStrictly = false
       // })
+      }
     },
     handleDelete({ $index, row }) {
-      this.$confirm('Confirm to remove the role?', 'Warning', {
+      if(this.checkRolePermission("Delete",this.subsystem_code)){
+      this.$confirm('Bạn có muốn xóa quyền người dùng?', 'Cảnh báo', {
         confirmButtonText: 'Confirm',
         cancelButtonText: 'Cancel',
         type: 'warning'
@@ -355,6 +363,7 @@ export default {
           })
         })
         .catch(err => { console.error(err) })
+      }
     },
     generateTree(routes, basePath = '/', checkedKeys) {
       const res = []
@@ -434,13 +443,14 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+
 .app-container {
   .roles-table {
     margin-top: 30px;
   }
-  .permission-tree {
-    margin-bottom: 30px;
-  }
+}
+.el-dialog {
+  margin-top: 2vh !important;
 }
 </style>

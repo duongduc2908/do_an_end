@@ -1,11 +1,14 @@
 <template>
-  <div class="app-container">
+  <div
+    class="app-container"
+    v-if="checkRolePermission('View', subsystem_code, false)"
+  >
     <div class="filter-container">
       <div style="display: flex;justify-content: space-between">
         <div>
           <el-input
             v-model="listQuery.text_search"
-            placeholder="MNV/Ten/Email"
+            placeholder="MNV/Tên/Email"
             style="width: 200px;"
             class="filter-item"
             @keyup.enter.native="handleFilter"
@@ -26,7 +29,7 @@
           </el-select>
           <el-select
             v-model="listQuery.OrganizationUnitID"
-            placeholder="Phong ban"
+            placeholder="Phòng ban"
             clearable
             class="filter-item"
             style="width: 200px"
@@ -40,7 +43,7 @@
           </el-select>
           <el-select
             v-model="listQuery.JobPositionID"
-            placeholder="Chuc vu"
+            placeholder="Chức vụ"
             clearable
             class="filter-item"
             style="width: 130px"
@@ -55,7 +58,7 @@
         </div>
 
         <div>
-          <label class="label_date">Tu ngay: </label>
+          <label class="label_date">Từ ngày: </label>
           <el-date-picker
             style="width: 200px;"
             class="filter-item"
@@ -93,6 +96,7 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
+        v-if="checkRolePermission('Add', subsystem_code, false)"
       >
         Thêm mới
       </el-button>
@@ -112,7 +116,7 @@
         style="margin-left:15px;"
         @change="tableKey = tableKey + 1"
       >
-        Vi tri cong viec
+        Vị trí công việc
       </el-checkbox>
       <el-checkbox
         v-model="showOgUnit"
@@ -120,7 +124,7 @@
         style="margin-left:15px;"
         @change="tableKey = tableKey + 1"
       >
-        Phong ban
+        Phòng ban
       </el-checkbox>
     </div>
 
@@ -147,12 +151,12 @@
           <span>{{ row.MaNV }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Ngay tao" width="150px" align="center">
+      <el-table-column label="Ngày tạo" width="150px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.CreateDate | parseTime("{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="full_name" width="150px" align="center">
+      <el-table-column label="Tên nhân viên" width="150px" align="center">
         <template slot-scope="{ row }">
           <span>{{ row.full_name }}</span>
         </template>
@@ -162,14 +166,14 @@
           <span>{{ row.email }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Anh dai dien" width="195px" align="center">
+      <el-table-column label="Ảnh đại diện" width="195px" align="center">
         <template slot-scope="{ row }">
           <img class="img-current w-full" :src="row.Avatar" />
         </template>
       </el-table-column>
       <el-table-column
         v-if="showJobPosition"
-        label="Vi tri"
+        label="Vị trí"
         width="150px"
         align="center"
       >
@@ -179,7 +183,7 @@
       </el-table-column>
       <el-table-column
         v-if="showOgUnit"
-        label="Phong ban"
+        label="Phòng ban"
         width="150px"
         align="center"
       >
@@ -195,24 +199,33 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="Actions"
+        label="Hành động"
         align="center"
         width="300"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="editUser(row)">
-           Sửa
+          <el-button
+            type="primary"
+            size="mini"
+            @click="editUser(row)"
+            v-if="checkRolePermission('Edit', subsystem_code, false)"
+          >
+            Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteUser(row, $index)"
+            v-if="checkRolePermission('Edit', subsystem_code, false)"
           >
             Xóa
           </el-button>
           <el-button
-            v-if="!row.IsTrain"
+            v-if="
+              !row.IsTrain &&
+                checkRolePermission('Training', subsystem_code, false)
+            "
             size="mini"
             type="primary"
             @click="traninUser(row)"
@@ -248,10 +261,10 @@
       >
         <div class="flex" style="justify-content: space-between;">
           <div>
-            <el-form-item label="Ho ten " prop="full_name">
+            <el-form-item label="Họ tên " prop="full_name">
               <el-input v-model="temp.full_name" />
             </el-form-item>
-            <el-form-item label="Ten dang nhap " prop="user_name">
+            <el-form-item label="Tên đăng nhập " prop="user_name">
               <el-input v-model="temp.user_name" />
             </el-form-item>
             <el-form-item label="Email " prop="email">
@@ -265,10 +278,10 @@
                 onKeyPress="if(this.value.length==10) return false;"
               />
             </el-form-item>
-            <el-form-item label="Ngay phep " prop="NumberOfLeaveDay">
+            <el-form-item label="Ngày phép " prop="NumberOfLeaveDay">
               <el-input v-model="temp.NumberOfLeaveDay" />
             </el-form-item>
-            <el-form-item label="Dia chi " prop="Address">
+            <el-form-item label="Địa chỉ " prop="Address">
               <el-input v-model="temp.Address" />
             </el-form-item>
           </div>
@@ -279,12 +292,12 @@
               @change="changeFile($event)"
               style="display:none"
             />
-            <el-form-item label="Bo phan" prop="OrganizationUnitID">
+            <el-form-item label="Bộ phận" prop="OrganizationUnitID">
               <el-select
                 v-model="temp.OrganizationUnitID"
                 class="filter-item"
                 placeholder="Chọn phòng ban"
-                 @change="click_Organization"
+                @change="click_Organization"
               >
                 <el-option
                   v-for="item in organization_unit"
@@ -294,11 +307,11 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="Vi tri" prop="JobPositionID">
+            <el-form-item label="Vị trí" prop="JobPositionID">
               <el-select
                 v-model="temp.JobPositionID"
                 class="filter-item"
-                placeholder="Chon vi tri"
+                placeholder="Chọn vị trí"
               >
                 <el-option
                   v-for="item in job_position"
@@ -308,11 +321,11 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="Gioi tinh" prop="Gender">
+            <el-form-item label="Giới tính" prop="Gender">
               <el-select
                 v-model="temp.Gender"
                 class="filter-item"
-                placeholder="Chon gioi tinh"
+                placeholder="Chọn giới tính"
               >
                 <el-option
                   v-for="item in GenderList"
@@ -322,11 +335,11 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="Loai tai khoan" prop="group_role_id">
+            <el-form-item label="Loại tài khoản" prop="group_role_id">
               <el-select
                 v-model="temp.group_role_id"
                 class="filter-item"
-                placeholder="Chon quyen nguoi dung"
+                placeholder="Chọn quyền người dùng"
               >
                 <el-option
                   v-for="item in ListTypeAcc"
@@ -336,30 +349,30 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="Ngay thue" prop="HireDate">
+            <el-form-item label="Ngày thuê" prop="HireDate">
               <el-date-picker
                 v-model="temp.HireDate"
                 type="date"
-                placeholder="Chon ngay thue"
+                placeholder="Chọn ngày thuê"
               />
             </el-form-item>
-            <el-form-item label="Ngay nhan" prop="ReceiveDate">
+            <el-form-item label="Ngày nhận" prop="ReceiveDate">
               <el-date-picker
                 v-model="temp.ReceiveDate"
                 type="date"
-                placeholder="Chon ngay nhan"
+                placeholder="Chọn ngày nhận"
               />
             </el-form-item>
-            <el-form-item label="Ngay sinh" prop="BirthDay">
+            <el-form-item label="Ngày sinh" prop="BirthDay">
               <el-date-picker
                 v-model="temp.BirthDay"
                 type="date"
-                placeholder="Chon ngay sinh"
+                placeholder="Chọn ngày sinh"
               />
             </el-form-item>
           </div>
           <div class="">
-            <el-form-item label="Avatar" prop="Avatar">
+            <el-form-item label="Ảnh đại diện" prop="Avatar">
               <label for="import-file">
                 <div class="flex btn-select">
                   <div class="el-icon-upload"></div>
@@ -380,18 +393,18 @@
         </div>
         <div>
           <el-form-item
-            prop="list_roles"
+            prop="list_role_id"
             v-if="temp.group_role_id == 1"
             style="margin-bottom:10px"
-            label="Danh sach vai tro"
+            label="Danh sách vai trò"
           >
             <el-select
               class="select-role"
-              v-model="temp.list_roles"
+              v-model="temp.list_role_id"
               multiple
               filterable
               default-first-option
-              placeholder="Chon danh sach vai tro"
+              placeholder="Chọn danh sách vai trò"
             >
               <el-option
                 v-for="item in options"
@@ -476,7 +489,7 @@ import checkRolePermission from "@/utils/permission";
 import UploadImageTrain from "@/views/user/UploadImageTrain";
 
 const GenderList = [
-  { key: "0", display_name: "Nu" },
+  { key: "0", display_name: "Nữ" },
   { key: "1", display_name: "Nam" }
 ];
 export default {
@@ -513,7 +526,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
-      subsystem_code: "DANH_SACH_USER",
+      subsystem_code: "QL_NHAN_SU",
       listQuery: {
         page: 1,
         limit: 20,
@@ -528,14 +541,14 @@ export default {
       importanceOptions: [1, 2, 3],
       organization_unit:[],
       ListTypeAcc: [
-        { key: "0", label: "Nhan vien" },
-        { key: "1", label: "Quan Tri" }
+        { key: "0", label: "Nhân viên" },
+        { key: "1", label: "Quản trị" }
       ],
       job_position:[],
       GenderList,
       training: [
-        { display_name: "Da training", key: "1" },
-        { display_name: "Chua training", key: "0" }
+        { display_name: "Đã training", key: "1" },
+        { display_name: "Chưa training", key: "0" }
       ],
       sortOptions: [
         { label: "ID Ascending", key: "+id" },
@@ -544,7 +557,7 @@ export default {
       statusOptions: ["published", "draft", "deleted"],
       showJobPosition: false,
       showOgUnit: false,
-      list_roles: "",
+      list_role_id: "",
       temp: {
         full_name: "",
         user_name: "",
@@ -569,7 +582,7 @@ export default {
         link_Avatar_old: "",
         Gender: "",
         group_role_id: "",
-        list_roles: ""
+        list_role_id: ""
       },
       dialogFormVisible: false,
       dialogStatus: "",
@@ -579,14 +592,17 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
+      list_commune:[],
+      list_district:[],
+      list_provincial:[],
       rules: {
         full_name: [
-          { required: true, message: "Yeu cau nhap ho ten", trigger: "change" }
+          { required: true, message: "Yêu cầu nhập họ tên", trigger: "change" }
         ],
         user_name: [
           {
             required: true,
-            message: "Yeu cau nhap ten dang nhap",
+            message: "Yêu cầu nhập tên đăng nhập",
             trigger: "change"
           }
         ],
@@ -595,37 +611,37 @@ export default {
           {
             min: 10,
             max: 10,
-            message: "So dien thoai phai y/c 10 so.",
+            message: "Số điện thoại phải yêu cầu 10 số.",
             trigger: "blur"
           },
           {
             required: true,
             pattern: /(^\d{10}$)|(^\d{10}$)|(^\d{10}(\d|X|x)$)/,
-            message: "Nhap dung so dien thoai.",
+            message: "Nhập đúng số điện thoại.",
             trigger: "blur"
           }
         ],
         group_role_id: [
           {
             required: true,
-            message: "Yeu cau chon quyen nguoi dung",
+            message: "Yêu cầu chọn quyền người dùng",
             trigger: "change"
           }
         ],
         JobPositionID: [
           {
             required: true,
-            message: "Yeu cau chon vi tri nguoi dung",
+            message: "Yêu cầu chọn vị trí ",
             trigger: "blur"
           }
         ],
         OrganizationUnitID: [
-          { required: true, message: "Yeu cau chon to chuc", trigger: "change" }
+          { required: true, message: "Yêu cầu chọn tổ chức", trigger: "change" }
         ],
-        list_roles: [
+        list_role_id: [
           {
             required: true,
-            message: "Yeu cau chon danh sach quyen",
+            message: "Yêu cầu chọn danh sách quyền",
             trigger: "blur"
           }
         ]
@@ -680,9 +696,11 @@ export default {
     },
 
     traninUser(data) {
-      this.current_user = JSON.parse(JSON.stringify(data));
-      this.isVisibleTraning = true;
-      this.getSocketTraning();
+      if(this.checkRolePermission("Training",this.subsystem_code)){
+        this.current_user = JSON.parse(JSON.stringify(data));
+        this.isVisibleTraning = true;
+        this.getSocketTraning();
+      }
     },
     getPermission() {
       this.$store.dispatch("role_permission/getRoles", {}).then(res => {
@@ -792,37 +810,39 @@ export default {
       };
     },
     handleCreate() {
-      this.resetTemp();
-      this.dialogStatus = "create";
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate();
-      });
+      if(this.checkRolePermission("Add",this.subsystem_code)){
+        this.resetTemp();
+        this.dialogStatus = "create";
+        this.dialogFormVisible = true;
+        this.$nextTick(() => {
+          this.$refs["dataForm"].clearValidate();
+        });
+      }
     },
 
     addUser() {
-      // if(this.checkRolePermission("Add",this.subsystem_code)){
-      this.temp = {};
-      this.src = "http://localhost:4321/avatar/default_avatar.png";
-      this.temp.state = 1;
-      this.dialogFormVisible = true;
+      if(this.checkRolePermission("Add",this.subsystem_code)){
+        this.temp = {};
+        this.src = "http://localhost:4321/avatar/default_avatar.png";
+        this.temp.state = 1;
+        this.dialogFormVisible = true;
       // this.list_roles=[]
-      // }
+      }
     },
 
     editUser(data) {
       // this.list_roles = []
-      // if(this.checkRolePermission("Edit",this.subsystem_code)){
-      this.temp = Object.assign({}, data); // copy obj
-      // if(this.temp.list_roles){
-      //   this.list_roles = this.temp.list_roles
+      if(this.checkRolePermission("Edit",this.subsystem_code)){
+        this.temp = Object.assign({}, data); // copy obj
+        // if(this.temp.list_roles){
+        //   this.list_roles = this.temp.list_roles
 
-      // };
-      this.src = this.temp.Avatar;
-      this.file = null;
-      this.temp.state = 2;
-      this.dialogFormVisible = true;
-      // }
+        // };
+        this.src = this.temp.Avatar;
+        this.file = null;
+        this.temp.state = 2;
+        this.dialogFormVisible = true;
+      }
     },
 
     saveUser() {
@@ -867,7 +887,7 @@ export default {
       });
     },
     confirmDeleteUser(data, e) {
-      // if(this.checkRolePermission("Delete",this.subsystem_code)){
+      if(this.checkRolePermission("Delete",this.subsystem_code)){
       this.temp = Object.assign({}, data);
       this.temp.state = 3;
       this.$confirm(
@@ -885,7 +905,7 @@ export default {
         .catch(err => {
           console.error(err);
         });
-      // }
+      }
     },
     deleteUser() {
       this.$store.dispatch(`user/saveUser`, this.temp).then(res => {
@@ -1016,8 +1036,48 @@ export default {
     getSortClass: function(key) {
       const sort = this.listQuery.sort;
       return sort === `+${key}` ? "ascending" : "descending";
+    },
+    getProvincial(value=1){
+      if(!value){
+        this.list_provincial = [];
+        return;
+      }
+      axios.get("assets/dist/tinh_tp.json").then(data => {
+        this.list_provincial = Object.keys(data).map(key => data[key]).sort(function (a, b) {
+          if (a.name < b.name) { return -1; }
+          if (a.name > b.name) { return 1; }
+          return 0;
+        });
+      })
+    },
+    getDistrict(value){
+      if(!value){
+        this.list_district = [];
+        return;
+      }
+      axios.get(`assets/dist/quan-huyen/${value}.json`).then(data => {
+        this.list_district = Object.keys(data).map(key => data[key]).sort(function (a, b) {
+          if (a.name < b.name) { return -1; }
+          if (a.name > b.name) { return 1; }
+          return 0;
+        });
+      })
+    },
+
+    getCommune(value){
+      if(!value){
+        this.list_commune = [];
+        return;
+      }
+      axios.get(`assets/dist/xa-phuong/${value}.json`).then(data => {
+        this.list_commune = Object.keys(data).map(key => data[key]).sort(function (a, b) {
+          if (a.name < b.name) { return -1; }
+          if (a.name > b.name) { return 1; }
+          return 0;
+        });
+      })
     }
-  }
+  },
 };
 </script>
 <style lang="scss">

@@ -15,3 +15,11 @@ export function addShiftPlan(param) {
     data:param
   })
 }
+
+export function deleteShiftPlan(param) {
+  return request({
+    url: '/shift_plan/delete',
+    method: 'post',
+    data:param
+  })
+}

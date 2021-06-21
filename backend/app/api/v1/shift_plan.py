@@ -23,7 +23,7 @@ def post():
     try:
         json_data = request.get_json()
         ShiftPlanName = json_data.get('ShiftPlanName').lower()
-        WorkingShiftIDs = json_data.get('WorkingShiftIDs')
+        WorkingShiftIDs = json_data.get('WorkingShiftIDs',None)
         WorkingShiftNames = json_data.get('WorkingShiftNames', [])
         DateApplyType = json_data.get('DateApplyType', None)
         FromDate = json_data.get('FromDate', None)
@@ -39,17 +39,20 @@ def post():
     except Exception as ex:
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
-    for wk_id in WorkingShiftIDs:
-        wks = client.db.working_shift.find_one({"_id":wk_id})
-        WorkingShiftNames.append(wks["WorkingShiftName"])
-    for og_id in OrganizationUnitIDs:
-        og = client.db.organization_unit.find_one({"_id":og_id})
-        if og:
-            OrganizationUnitName.append(og["OrganizationUnitName"])
-    for emp_id in EmployeeIDs:
-        emp = client.db.user.find_one({"_id":emp_id})
-        if emp:
-            EmployeeNames.append(emp["full_name"])
+    if WorkingShiftIDs:
+        for wk_id in WorkingShiftIDs:
+            wks = client.db.working_shift.find_one({"_id":wk_id})
+            WorkingShiftNames.append(wks["WorkingShiftName"])
+    if OrganizationUnitIDs:
+        for og_id in OrganizationUnitIDs:
+            og = client.db.organization_unit.find_one({"_id":og_id})
+            if og:
+                OrganizationUnitName.append(og["OrganizationUnitName"])
+    if EmployeeIDs:
+        for emp_id in EmployeeIDs:
+            emp = client.db.user.find_one({"_id":emp_id})
+            if emp:
+                EmployeeNames.append(emp["full_name"])
     _id = str(ObjectId())
     shift_plan = {
         '_id': _id,
@@ -156,35 +159,6 @@ def put():
 
 
 """
-Function: Update user's profile - Admin right required
-Input: user_id
-Output: Success / Error Message
-"""
-
-
-@api.route('/delete', methods=['POST'])
-@jwt_required
-def delete():
-    user_curr_id = get_jwt_identity()
-    claims = get_jwt_claims()
-    if not claims['is_admin']:
-        return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
-    json_data = request.get_json();
-    shift_plan_id = json_data['_id']
-    shift_plan = client.db.shift_plan.find_one({'_id': shift_plan_id})
-    if shift_plan is None:
-        return send_error(message="Không tìm thấy dự liệu đầu vào trong cơ sở dữ liệu")
-    try:
-        client.db.shift_plan.delete_one({'_id': shift_plan_id})
-        notif = notification(content=claims['full_name']+" đã xóa ca lam " + shift_plan['ShiftPlanName'] + " thành công", user_id=user_curr_id,type=DELETE)
-        client.db.history.insert_one(notif)
-    except Exception:
-        return send_error(message="Lỗi xóa không thành công")
-
-    return send_result(message="Xóa thành công")
-
-
-"""
 Function: Get all page
 Input: 
 Output: Success / Error Message
@@ -227,3 +201,25 @@ def get_all_page_search():
         'results': list_shift_plan
     }
     return send_result(data=data)
+
+
+@api.route('/delete', methods=['POST'])
+@jwt_required
+def delete():
+    claims = get_jwt_claims()
+    if not claims['is_admin']:
+        return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
+    try:
+        json_data = request.get_json()
+        ShiftPlanEmployee_ID = json_data.get('_id',None)
+        print(ShiftPlanEmployee_ID)
+        if ShiftPlanEmployee_ID:
+            check = client.db.shift_plan.find_one({"_id": ShiftPlanEmployee_ID})
+            if check:
+                client.db.shift_plan.delete_one({"_id": ShiftPlanEmployee_ID})
+            else:
+                 return send_error(message="Không tìm thấy dự liệu đầu vào trong cơ sở dữ liệu")
+    except Exception as ex:
+        print(ex)
+        return send_error(message='Lỗi dữ liệu đầu vào')
+    return send_result(message="Xóa thành công")

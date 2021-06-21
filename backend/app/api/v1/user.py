@@ -45,7 +45,7 @@ def post():
         Address = json_data.get('Address', None)
         group_role_id = json_data.get('group_role_id', None)
         IsTrain = json_data.get('IsTrain', None)
-        list_roles = json_data.get('list_roles', None)
+        list_role_id = json_data.get('list_role_id', None)
         password = "123456a@"
 
     except Exception as ex:
@@ -86,21 +86,13 @@ def post():
         'ModifiedBy':'',
         'status':1,
         'group_role_id':group_role_id,
-        'IsTrain': IsTrain
+        'IsTrain': IsTrain,
+        'list_role_id':list_role_id
     }
     try:
         client.db.user.insert_one(user)
         notif = notification(content=claims['full_name']+" đã thêm nhân viên " + full_name + " thành công", user_id=user_curr_id, type=CREATE)
         client.db.history.insert_one(notif)
-        if list_roles:
-            for role in list_roles:
-                user_role_id = str(ObjectId())
-                user_role = {
-                    '_id': user_role_id,
-                    'user_id': _id,
-                    'role_id': role,
-                }
-                client.db.user_role.insert_one(user_role)
     except Exception as ex:
         print(ex)
         return send_error(message='có lỗi ngoại lệ xảy ra')
@@ -146,7 +138,7 @@ def put():
         status = json_data.get('status', 1)
         link_Avatar_old = json_data.get('link_Avatar_old', "None")
         IsTrain = json_data.get('IsTrain', None)
-        list_roles = json_data.get('list_roles', None)
+        list_role_id = json_data.get('list_role_id', None)
     except Exception as e:
         print(e)
         return send_error(message='Lỗi dữ liệu đầu vào')
@@ -182,20 +174,11 @@ def put():
             'ModifiedBy':ModifiedBy,
             'status':status,
             'group_role_id':group_role_id,
-            'IsTrain':IsTrain
+            'IsTrain':IsTrain,
+            'list_role_id':list_role_id
         }}
     try:
         client.db.user.update_one({'_id': user_id}, new_user)
-        client.db.user_role.delete_many({'user_id': user_id})
-        if list_roles:
-            for role in list_roles:
-                user_role_id = str(ObjectId())
-                user_role = {
-                    '_id': user_role_id,
-                    'user_id': user_id,
-                    'role_id': role,
-                }
-                client.db.user_role.insert_one(user_role)
         notif = notification(content=claims['full_name']+" đã sửa nhân viên " + full_name + " thành công", user_id=user_curr_id, type=UPDATE)
         client.db.history.insert_one(notif)
     except Exception as ex:
@@ -228,8 +211,6 @@ def delete():
         if user['Avatar'] != "None" and user['Avatar'] != None and user['Avatar'] != '':
             path_file = os.path.join(PATH_IMAGE_AVATAR, user['Avatar'].split("/")[-1])
             os.remove(path_file)
-
-        client.db.user_role.delete_many({'user_id':user_id})
         notif = notification(content=claims['full_name']+" đã xóa nhân viên " + user['full_name'] + " thành công", user_id=user_curr_id,type=DELETE)
         client.db.history.insert_one(notif)
     except Exception as e:
@@ -279,14 +260,6 @@ def get_all_page_search():
     '''Make a request'''
 
     for i in list_user:
-        list_roles = client.db.user_role.find({"user_id":i["_id"]})
-        list_res = []
-        if list_roles:
-            for role in list(list_roles):
-                list_res.append(role["role_id"])
-            i['list_roles'] = list_res
-        else:
-            i['list_roles'] = ""
         if int(i['status']) == USER_ACTIVATED:
             i['status_name'] = STATUS_USER[USER_ACTIVATED]
         if int(i['status']) == USER_DEACTIVATED:
@@ -303,20 +276,38 @@ def get_all_page_search():
 @jwt_required
 def get_info():
     user_curr_id = get_jwt_identity()
-    users = client.db.user.find_one({'_id': user_curr_id})
-    if not users:
+    
+
+    user = client.db.user.find_one({'_id': user_curr_id})
+
+    if not user:
         return send_error(message="Không tìm thấy bản ghi")
-    if users['group_role_id'] == '1':
+    if user['group_role_id'] == '1':
         role = 'admin'
     else:
         role = 'editor'
-    list_roles = list(client.db.user_role.find({'user_id': user_curr_id}))
-    if len(list_roles):
-        for roles in list_roles:
-            role_permissions = list(client.db.role_permission.find({'role_id': roles['role_id']}))
-            data = {
-                'results': users,
-                "role": [role],
-                'role_permissions':role_permissions
-            }
+
+    list_role_permisson = list(client.db.role_permission.find(
+        {'role_id': {"$in": user["list_role_id"]}}))
+    list_subsystem_permisson = list(client.db.subsystem_permission.find())
+    if len(list_subsystem_permisson) > 0 and len(list_role_permisson) > 0:
+        for subsystem_code in list_subsystem_permisson:
+            for role_permisson in list_role_permisson:
+                if role_permisson["subsystem_code"] == subsystem_code["subsystem_code"]:
+                    for item in role_permisson["permission_code"]:
+                        if len(subsystem_code["permission_code"]) > 0:
+                            permission_code = list(filter(
+                                lambda x: x["code"] == item["code"], subsystem_code["permission_code"]))
+                            if len(permission_code) > 0:
+                                if item["isCheck"] == True:
+                                    permission_code[0]["isCheck"] = True
+                            else:
+                                subsystem_code["permission_code"].append(item)
+                        else:
+                            subsystem_code["permission_code"].append(item)
+    data = {
+        'results': user,
+        "role": [role],
+        'role_permissions':list_subsystem_permisson
+    }
     return send_result(data)

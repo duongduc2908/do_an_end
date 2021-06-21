@@ -183,14 +183,15 @@ def check_phone_number(str_data):
 def create_new_role_id():
     lst = []
     list_user = client.db.role_permission.find({}, {'role_id': 1})
-    if list_user is None:
+    if list_user and len(list(list_user)) >0:
+        list_user = list(list_user)
+        for i in list_user:
+            lst.append(i['role_id'])
+        tmp = max(lst)
+        stt = int(tmp) + 1
+        return str(stt)
+    else:
         return '1'
-    list_user = list(list_user)
-    for i in list_user:
-        lst.append(i['role_id'])
-    tmp = max(lst)
-    stt = int(tmp) + 1
-    return str(stt)
 
 
 def set_auto_MaNV():

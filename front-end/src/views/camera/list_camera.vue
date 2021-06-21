@@ -1,5 +1,5 @@
 <template>
-<div class="h-full">
+<div class="h-full"  v-if="checkRolePermission('View',subsystem_code,false)">
   <div style="padding: 24px 50px;">
     <div>
       <h2>Danh sách camera</h2>
@@ -29,7 +29,7 @@
                       <el-button size="mini" class="filter-item" type="primary" v-if="checkRolePermission('Edit',subsystem_code,false)" @click="editCamera(popupContent)">
                       Sửa
                       </el-button>
-                      <el-button size="mini" type="danger" @click="confirmDeleteCamera(popupContent)">
+                      <el-button size="mini" type="danger" @click="confirmDeleteCamera(popupContent)" v-if="checkRolePermission('Delete',subsystem_code,false)">
                         Xóa
                       </el-button>
                     </div>
@@ -43,7 +43,9 @@
                 </div>
 
                 <div @click="popupContent.isActive=!popupContent.isActive;$store.dispatch(`camera/actionCamera`, popupContent)"
-                class="cursor tags-view-item tags-view-item-active m-b-16 f-right" :class="{ 'tags-view-item-unactive' : !popupContent.isActive }">
+                class="cursor tags-view-item tags-view-item-active m-b-16 f-right" :class="{ 'tags-view-item-unactive' : !popupContent.isActive }"
+                v-if="checkRolePermission('Activate',subsystem_code,false)"
+                >
                 {{popupContent.isActive ? 'Kích hoạt' : 'Huy kích hoạt'}}
                 </div>
             </div>
@@ -147,7 +149,7 @@ export default {
         create: 'Create'
       },
       rules: {
-        name: [{ required: true, message: 'Ten camera khong duoc de trong', trigger: 'change' }],
+        name: [{ required: true, message: 'Tên camera khong duoc de trong', trigger: 'change' }],
         // link_image: [{ required: true, message: 'Duong dan anh khong duoc de trong', trigger: 'change' }],
         link_stream: [{ required: true, message: 'Duong dan stream khong duoc de trong', trigger: 'change' }]
       },
