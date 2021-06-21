@@ -31,7 +31,7 @@ for imagePath in imagePaths:
 	if len(bbs)>0:
 		t0 = time.time()
 		emb=face_vector.get_vector(image, bbs[0],points)		
-		print('Embeding:',time.time() - t0)
+		print('Embeding:',emb.shape)
 		labels.append(label)
 		X.append(emb)
 				

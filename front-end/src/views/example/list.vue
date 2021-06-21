@@ -45,7 +45,7 @@
         <template slot-scope="scope">
           <router-link :to="'/example/edit/'+scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">
-              Edit
+              Sửa
             </el-button>
           </router-link>
         </template>

@@ -16,12 +16,14 @@
             clearable
             class="filter-item"
             style="width: 200px"
+            @change="click_Organization"
           >
             <el-option
               v-for="item in organization_unit"
               :key="item.key"
               :label="item.display_name + '(' + item.key + ')'"
               :value="item.key"
+              
             />
           </el-select>
           <el-select
@@ -34,7 +36,7 @@
             <el-option
               v-for="item in job_position"
               :key="item.key"
-              :label="item.display_name + '(' + item.key + ')'"
+              :label="item.display_name"
               :value="item.key"
             />
           </el-select>
@@ -67,7 +69,7 @@
             style="margin-left:20px"
             @click="handleFilter"
           >
-            Search
+            Tìm kiếm
           </el-button>
         </div>
       </div>
@@ -130,19 +132,7 @@
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-const organization_unit = [
-  { key: "1", display_name: "Phong hanh chinh" },
-  { key: "2", display_name: "Phong phat trien phan mem" },
-  { key: "3", display_name: "Phong nghien cuu" },
-  { key: "4", display_name: "Phong kiem thu" }
-];
-const job_position = [
-  { key: "1", display_name: "Thuc tap" },
-  { key: "2", display_name: "Chuyen vien" },
-  { key: "3", display_name: "Chuyen gia" },
-  { key: "4", display_name: "Pho giam doc" },
-  { key: "5", display_name: "Giam doc" }
-];
+
 export default {
   components: { Pagination },
   data() {
@@ -157,16 +147,28 @@ export default {
         start_date: undefined,
         to_date: undefined
       },
+      tableKey:1,
       listLoading: true,
       list: null,
-      organization_unit,
-      job_position
+      organization_unit:[],
+      job_position:[]
     };
   },
   created() {
     this.getList();
   },
   methods: {
+    click_Organization(data){
+      debugger
+      let param = {
+        "OrganizationUnitID":data
+      }
+       this.$store.dispatch(`job_position/getByOg`,param).then(res =>{
+        console.log(res)
+        this.job_position = res
+        this.listQuery.JobPositionID = []
+      })
+    },
     handleFilter() {
       this.listQuery.page = 1;
       this.getList();
@@ -209,6 +211,10 @@ export default {
           this.total = res.totals;
           this.listLoading = false;
         });
+      this.$store.dispatch(`organization_unit/getList`).then(res =>{
+        console.log(res)
+        this.organization_unit = res
+      })
     }
   }
 };

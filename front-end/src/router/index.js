@@ -122,10 +122,16 @@ export const asyncRoutes = [
         meta: { title: 'QL nhân sự' }
       },
       {
-        path: 'tong-hop',
-        component: () => import('@/views/cham-cong/tong_hop'),
+        path: 'bo-phan',
+        component: () => import('@/views/user/list_position'),
         name: 'DragTable',
-        meta: { title: 'Tổng hợp' }
+        meta: { title: 'Quản lý bộ phận ' }
+      },
+      {
+        path: 'phong-ban',
+        component: () => import('@/views/user/list_organization'),
+        name: 'DragTable',
+        meta: { title: 'Quản lý phòng ban ' }
       }]
   },
   {

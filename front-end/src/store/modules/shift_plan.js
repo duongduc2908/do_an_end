@@ -1,5 +1,5 @@
 
-import { getShiftPlan} from '@/api/shift_plan'
+import { getShiftPlan,addShiftPlan} from '@/api/shift_plan'
 
 const mutations = {
 }

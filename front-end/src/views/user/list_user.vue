@@ -85,7 +85,7 @@
         icon="el-icon-search"
         @click="handleFilter"
       >
-        Search
+        Tìm kiếm
       </el-button>
       <el-button
         @click="addUser"
@@ -94,7 +94,7 @@
         type="primary"
         icon="el-icon-edit"
       >
-        Add
+        Thêm mới
       </el-button>
       <el-button
         v-waves
@@ -202,14 +202,14 @@
       >
         <template slot-scope="{ row, $index }">
           <el-button type="primary" size="mini" @click="editUser(row)">
-            Edit
+           Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteUser(row, $index)"
           >
-            Delete
+            Xóa
           </el-button>
           <el-button
             v-if="!row.IsTrain"
@@ -283,7 +283,8 @@
               <el-select
                 v-model="temp.OrganizationUnitID"
                 class="filter-item"
-                placeholder="Chon bo phan"
+                placeholder="Chọn phòng ban"
+                 @change="click_Organization"
               >
                 <el-option
                   v-for="item in organization_unit"
@@ -411,10 +412,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          Hủy
         </el-button>
         <el-button type="primary" @click="saveUser">
-          Confirm
+          Xác nhận
         </el-button>
       </div>
     </el-dialog>
@@ -459,7 +460,7 @@
             saveDataTranning();
             isVisibleTraning = false;
           "
-          >Confirm</el-button
+          >Xác nhận</el-button
         >
       </span>
     </el-dialog>
@@ -474,19 +475,6 @@ import Pagination from "@/components/Pagination"; // secondary package based on 
 import checkRolePermission from "@/utils/permission";
 import UploadImageTrain from "@/views/user/UploadImageTrain";
 
-const organization_unit = [
-  { key: "1", display_name: "Phong hanh chinh" },
-  { key: "2", display_name: "Phong phat trien phan mem" },
-  { key: "3", display_name: "Phong nghien cuu" },
-  { key: "4", display_name: "Phong kiem thu" }
-];
-const job_position = [
-  { key: "1", display_name: "Thuc tap" },
-  { key: "2", display_name: "Chuyen vien" },
-  { key: "3", display_name: "Chuyen gia" },
-  { key: "4", display_name: "Pho giam doc" },
-  { key: "5", display_name: "Giam doc" }
-];
 const GenderList = [
   { key: "0", display_name: "Nu" },
   { key: "1", display_name: "Nam" }
@@ -538,12 +526,12 @@ export default {
         sort: "+id"
       },
       importanceOptions: [1, 2, 3],
-      organization_unit,
+      organization_unit:[],
       ListTypeAcc: [
         { key: "0", label: "Nhan vien" },
         { key: "1", label: "Quan Tri" }
       ],
-      job_position,
+      job_position:[],
       GenderList,
       training: [
         { display_name: "Da training", key: "1" },
@@ -628,7 +616,7 @@ export default {
           {
             required: true,
             message: "Yeu cau chon vi tri nguoi dung",
-            trigger: "change"
+            trigger: "blur"
           }
         ],
         OrganizationUnitID: [
@@ -761,6 +749,10 @@ export default {
         this.total = res.totals;
         this.listLoading = false;
       });
+      this.$store.dispatch(`organization_unit/getList`).then(res =>{
+      console.log(res)
+      this.organization_unit = res
+      })
     },
 
     handleFilter() {
@@ -944,6 +936,17 @@ export default {
       this.$nextTick(() => {
         this.$refs["dataForm"].clearValidate();
       });
+    },
+    click_Organization(data){
+      debugger
+      let param = {
+        "OrganizationUnitID":data
+      }
+       this.$store.dispatch(`job_position/getByOg`,param).then(res =>{
+        console.log(res)
+        this.job_position = res
+      })
+      this.temp.JobPositionID =""
     },
     updateData() {
       this.$refs["dataForm"].validate(valid => {

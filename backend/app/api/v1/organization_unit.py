@@ -36,7 +36,7 @@ def post():
     }
     try:
         client.db.organization_unit.insert_one(organization_unit)
-        notif = notification(content=claims['full_name']+" đã thêm job position " + OrganizationUnitName + " thành công", user_id=user_curr_id, type=CREATE)
+        notif = notification(content=claims['full_name']+" đã thêm to chuc " + OrganizationUnitName + " thành công", user_id=user_curr_id, type=CREATE)
         client.db.history.insert_one(notif)
     except Exception as ex:
         print(ex)
@@ -57,7 +57,8 @@ def put():
         json_data = request.get_json()
         _id = json_data.get('_id')
         OrganizationUnitName = json_data.get('OrganizationUnitName', "None")
-        ParentID = json_data.get('ParentID')
+        OrganizationUnitCode = json_data.get('OrganizationUnitCode', "None")
+        ParentID = json_data.get('ParentID',0)
     except Exception as ex:
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
@@ -70,7 +71,7 @@ def put():
     new_organization_unit = {
         '$set': {
             'OrganizationUnitName': OrganizationUnitName,
-            'OrganizationUnitCode': organization_unit["OrganizationUnitCode"],
+            'OrganizationUnitCode': OrganizationUnitCode,
             'ParentID': ParentID
         }}
     try:
@@ -135,3 +136,15 @@ def get_all_page_search():
 
     return send_result(data=data)
 
+
+@api.route('/get_list',methods=["GET"])
+@jwt_required
+def get_list():
+    list_og = list(client.db.organization_unit.find({},{"_id":1,"OrganizationUnitName":1}))
+    list_result = []
+    for og in list_og:
+        list_result.append({
+            "key":og["_id"],
+            "display_name":og["OrganizationUnitName"]
+        })
+    return send_result(data=list_result)

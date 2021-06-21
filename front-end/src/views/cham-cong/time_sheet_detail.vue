@@ -80,7 +80,16 @@
             style="margin-left:20px"
             @click="handleFilter"
           >
-            Search
+            Tìm kiếm
+          </el-button>
+          <el-button
+            @click="addTimeSheet"
+            class="filter-item"
+            style="margin-left: 10px;"
+            type="primary"
+            icon="el-icon-edit"
+          >
+            Them
           </el-button>
         </div>
       </div>
@@ -247,7 +256,48 @@
         <div class="flex" style="justify-content: space-between;"></div>
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogFormVisible = false">
-            Cancel
+           Hủy
+          </el-button>
+        </div>
+      </el-dialog>
+      <el-dialog
+        v-if="dialogAddVisible"
+        width="1000px"
+        height="1000px"
+        :visible.sync="dialogAddVisible"
+        title="Them moi bang cham cong"
+      >
+        <div class="flex" style="justify-content: space-between;">
+          <el-form
+            ref="dataForm"
+            label-position="left"
+            label-width="100px"
+            style="margin:0 50px;"
+          >
+          <div class="flex">
+            <div>
+              <el-form-item label="Ten bang cong " prop="full_name">
+              <el-input  />
+            </el-form-item>
+            
+            </div>
+            <div>
+                <el-form-item label="Ho ten " prop="full_name">
+                  <el-input  />
+                </el-form-item>
+                <el-form-item label="Ten dang nhap " prop="user_name">
+                  <el-input  />
+                </el-form-item>
+                <el-form-item label="Email " prop="email">
+                  <el-input/>
+                </el-form-item>
+            </div>
+          </div>
+          </el-form>
+        </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogAddVisible = false">
+            Hủy
           </el-button>
         </div>
       </el-dialog>
@@ -257,19 +307,6 @@
 <script>
 import Pagination from "@/components/Pagination";
 import moment from "moment";
-const organization_unit = [
-  { key: "1", display_name: "Phong hanh chinh" },
-  { key: "2", display_name: "Phong phat trien phan mem" },
-  { key: "3", display_name: "Phong nghien cuu" },
-  { key: "4", display_name: "Phong kiem thu" }
-];
-const job_position = [
-  { key: "1", display_name: "Thuc tap" },
-  { key: "2", display_name: "Chuyen vien" },
-  { key: "3", display_name: "Chuyen gia" },
-  { key: "4", display_name: "Pho giam doc" },
-  { key: "5", display_name: "Giam doc" }
-];
 export default {
   components: { Pagination },
   data() {
@@ -288,13 +325,13 @@ export default {
       param: {},
       listLoading: false,
       list: null,
-      organization_unit,
-      job_position,
+      organization_unit:[],
       list_time_sheet: null,
       name_time_sheet: null,
       dialogFormVisible: false,
       box_click: null,
-      show_detail: false
+      show_detail: false,
+      dialogAddVisible:false
     };
   },
   created() {
@@ -376,6 +413,9 @@ export default {
             this.listLoading = false;
           });
       }
+      this.$store.dispatch(`organization_unit/getList`).then(res =>{
+      this.organization_unit = res
+      })
     },
     getlist_dropbox() {
       this.$store.dispatch(`timesheet_detail/get_list`).then(res => {
@@ -391,6 +431,9 @@ export default {
         moment(day[0].check_in_date).format("DD-MM-YYYY");
       this.view_cham_cong = this.view_cham_cong.toUpperCase();
       this.dialogFormVisible = true;
+    },
+    addTimeSheet(){
+        this.dialogAddVisible=true
     }
   }
 };

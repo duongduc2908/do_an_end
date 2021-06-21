@@ -69,7 +69,7 @@
             icon="el-icon-edit"
             @click="row.edit=!row.edit"
           >
-            Edit
+            Sửa
           </el-button>
         </template>
       </el-table-column>

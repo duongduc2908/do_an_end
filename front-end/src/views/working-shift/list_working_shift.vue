@@ -5,7 +5,7 @@
         <div>
           <el-input
             v-model="listQuery.text_search"
-            placeholder="Tim kiem ca lam viec"
+            placeholder="Tìm kiếm ca làm việc"
             style="width: 200px;"
             class="filter-item"
             @keyup.enter.native="handleFilter"
@@ -20,7 +20,7 @@
         icon="el-icon-search"
         @click="handleFilter"
       >
-        Search
+        Tìm kiếm
       </el-button>
       <el-button
         @click="addWorkingShift"
@@ -29,7 +29,7 @@
         type="primary"
         icon="el-icon-edit"
       >
-        Add
+        Thêm mới
       </el-button>
     </div>
 
@@ -45,10 +45,7 @@
     >
       <el-table-column
         label="Ma ca"
-        prop="id"
-        sortable="custom"
         align="center"
-        width="100"
       >
         <template slot-scope="{ row }">
           <span>{{ row.WorkingShiftCode }}</span>
@@ -92,14 +89,14 @@
       >
         <template slot-scope="{ row, $index }">
           <el-button type="primary" size="mini" @click="editWorkingShift(row)">
-            Edit
+            Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteWorkingShift(row, $index)"
           >
-            Delete
+            Xóa
           </el-button>
         </template>
       </el-table-column>
@@ -129,7 +126,7 @@
         style="margin:0 50px;"
       >
         <div>
-          <h2>Thong tin chung</h2>
+          <h2>Thông tin chung</h2>
         </div>
         <div class="flex">
           <div class="w-50">
@@ -360,10 +357,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          Hủy
         </el-button>
         <el-button type="primary" @click="saveWorkingShift">
-          Confirm
+          Xác nhận
         </el-button>
       </div>
     </el-dialog>
@@ -524,8 +521,8 @@ export default {
     confirmDeleteWorkingShift(row,$index) {
       debugger
       this.$confirm('Ban co chac muon xoa ca lam viec ?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy',
         type: 'warning'
       })
         .then(async() => {

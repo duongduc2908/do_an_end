@@ -23,7 +23,7 @@
         Cancel
       </el-button>
       <el-button type="primary" @click="handleSubmit">
-        Confirm
+        Xác nhận
       </el-button>
     </el-dialog>
   </div>

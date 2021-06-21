@@ -24,7 +24,7 @@ def post():
         json_data = request.get_json()
         ShiftPlanName = json_data.get('ShiftPlanName').lower()
         WorkingShiftIDs = json_data.get('WorkingShiftIDs')
-        WorkingShiftNames = json_data.get('WorkingShiftNames', None)
+        WorkingShiftNames = json_data.get('WorkingShiftNames', [])
         DateApplyType = json_data.get('DateApplyType', None)
         FromDate = json_data.get('FromDate', None)
         ToDate = json_data.get('ToDate', None)
@@ -32,14 +32,24 @@ def post():
         RepeatConfig = json_data.get('RepeatConfig', None)
         ObjectType = json_data.get('ObjectType')
         OrganizationUnitIDs = json_data.get('OrganizationUnitIDs', None)
-        OrganizationUnitName = json_data.get('OrganizationUnitName', None)
+        OrganizationUnitName = json_data.get('OrganizationUnitName', [])
         EmployeeIDs = json_data.get('EmployeeIDs', None)
-        EmployeeNames = json_data.get('EmployeeNames', None)
+        EmployeeNames = json_data.get('EmployeeNames', [])
 
     except Exception as ex:
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
-
+    for wk_id in WorkingShiftIDs:
+        wks = client.db.working_shift.find_one({"_id":wk_id})
+        WorkingShiftNames.append(wks["WorkingShiftName"])
+    for og_id in OrganizationUnitIDs:
+        og = client.db.organization_unit.find_one({"_id":og_id})
+        if og:
+            OrganizationUnitName.append(og["OrganizationUnitName"])
+    for emp_id in EmployeeIDs:
+        emp = client.db.user.find_one({"_id":emp_id})
+        if emp:
+            EmployeeNames.append(emp["full_name"])
     _id = str(ObjectId())
     shift_plan = {
         '_id': _id,
@@ -84,7 +94,7 @@ def put():
         Shift_plan_id = json_data.get('_id', None)
         ShiftPlanName = json_data.get('ShiftPlanName').lower()
         WorkingShiftIDs = json_data.get('WorkingShiftIDs')
-        WorkingShiftNames = json_data.get('WorkingShiftNames', None)
+        WorkingShiftNames = json_data.get('WorkingShiftNames', [])
         DateApplyType = json_data.get('DateApplyType', None)
         FromDate = json_data.get('FromDate', None)
         ToDate = json_data.get('ToDate', None)
@@ -92,9 +102,9 @@ def put():
         RepeatConfig = json_data.get('RepeatConfig', None)
         ObjectType = json_data.get('ObjectType')
         OrganizationUnitIDs = json_data.get('OrganizationUnitIDs', None)
-        OrganizationUnitName = json_data.get('OrganizationUnitName', None)
+        OrganizationUnitName = json_data.get('OrganizationUnitName', [])
         EmployeeIDs = json_data.get('EmployeeIDs', None)
-        EmployeeNames = json_data.get('EmployeeNames', None)
+        EmployeeNames = json_data.get('EmployeeNames', [])
 
     except Exception as e:
         print(e)
@@ -103,6 +113,17 @@ def put():
     shift_plan = client.db.shift_plan.find_one({'_id': Shift_plan_id})
     if shift_plan is None:
         return send_error(message='Không tìm thay ca lam viec.')
+    for wk_id in WorkingShiftIDs:
+        wks = client.db.working_shift.find_one({"_id":wk_id})
+        WorkingShiftNames.append(wks["WorkingShiftName"])
+    for og_id in OrganizationUnitIDs:
+        og = client.db.organization_unit.find_one({"_id":og_id})
+        if og:
+            OrganizationUnitName.append(og["OrganizationUnitName"])
+    for emp_id in EmployeeIDs:
+        emp = client.db.user.find_one({"_id":emp_id})
+        if emp:
+            EmployeeNames.append(emp["full_name"])
     new_shift_plan = {
         '$set': {
             'ShiftPlanName': ShiftPlanName,
@@ -123,6 +144,7 @@ def put():
             'ModifiedDate': datetime.today(),
             'ModifiedBy': claims['full_name']
         }}
+
     try:
         client.db.shift_plan.update_one({'_id': Shift_plan_id}, new_shift_plan)
         notif = notification(content=claims['full_name']+" đã sửa phan ca lam viec " + ShiftPlanName + " thành công", user_id=user_curr_id, type=UPDATE)

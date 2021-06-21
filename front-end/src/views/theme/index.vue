@@ -38,7 +38,7 @@
       <el-button type="primary" icon="el-icon-share" />
       <el-button type="primary" icon="el-icon-delete" />
       <el-button type="primary" icon="el-icon-search">
-        Search
+        Tìm kiếm
       </el-button>
       <el-button type="primary">
         Upload

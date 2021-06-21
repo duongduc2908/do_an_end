@@ -3,6 +3,7 @@ from app.enums import CREATE,UPDATE,DELETE
 from app.utils import  send_result, send_error, notification
 from app.extensions import client
 from bson import ObjectId
+import json
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
@@ -23,12 +24,15 @@ def post():
         JobPositionName = json_data.get('JobPositionName', "")
         JobPositionCode = json_data.get('JobPositionCode', "")
         OrganizationUnitID = json_data.get('OrganizationUnitID', "")
-        OrganizationUnitName = json_data.get('OrganizationUnitName', "")
     except Exception as ex: 
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
 
     _id = str(ObjectId())
+    OrganizationUnitName=[]
+    for og in OrganizationUnitID:
+        og_name = client.db.organization_unit.find_one({"_id":og})
+        OrganizationUnitName.append(og_name["OrganizationUnitName"])
     job_position = {
         '_id': _id,
         'JobPositionName': JobPositionName,
@@ -59,8 +63,8 @@ def put():
         json_data = request.get_json()
         _id = json_data.get('_id')
         JobPositionName = json_data.get('JobPositionName', "None")
+        JobPositionCode = json_data.get('JobPositionCode', "None")
         OrganizationUnitID = json_data.get('OrganizationUnitID',)
-        OrganizationUnitName = json_data.get('OrganizationUnitName')
     except Exception as ex:
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
@@ -70,10 +74,14 @@ def put():
     if job_position is None:
         return send_error(message='Không tìm camera.')
     '''End check'''
+    OrganizationUnitName=[]
+    for og in OrganizationUnitID:
+        og_name = client.db.organization_unit.find_one({"_id":og})
+        OrganizationUnitName.append(og_name["OrganizationUnitName"])
     new_job_position = {
         '$set': {
             'JobPositionName': JobPositionName,
-            'JobPositionCode': job_position["JobPositionCode"],
+            'JobPositionCode': JobPositionCode,
             'OrganizationUnitID': OrganizationUnitID,
             'OrganizationUnitName': OrganizationUnitName
         }}
@@ -112,21 +120,14 @@ def delete():
 @api.route('/get_all_page_search', methods=['GET'])
 @jwt_required
 def get_all_page_search():
-    text_search = request.args.get('text_search', '')
+    query_filter = json.loads(request.args.get('query_filter', '{}'))
     page_size = request.args.get('page_size', '25')
     page_number = request.args.get('page_number', '1')
-    JobPositionCode = request.args.get('JobPositionCode', '')
     skips = int(page_size) * (int(page_number)-1)
-    '''Give list after filtering'''
-    query = \
-        {'$and': [
-            #{'isActive': isActive},
-            {'$or': [
-                {'JobPositionName': {'$regex': text_search, '$options': "$i"}},
-                {'JobPositionCode': {'$regex': JobPositionCode, '$options': "$i"}}
-            ]}
-        ]}
-    job_position = client.db.job_position.find(query)
+    print(query_filter)
+    if len(query_filter["$and"])==0:
+        query_filter={}
+    job_position = client.db.job_position.find(query_filter)
     totals = job_position.count()
     job_position = job_position.skip(skips).limit(int(page_size))
     '''end list'''
@@ -139,3 +140,17 @@ def get_all_page_search():
 
     return send_result(data=data)
 
+
+@api.route('/get_by_og', methods=['GET'])
+@jwt_required
+def get_by_og():
+    OrganizationUnitID = request.args.get('OrganizationUnitID', '')
+    list_position = list(client.db.job_position.find({},{"_id":1,"JobPositionName":1,"OrganizationUnitID":1}))
+    list_results=[]
+    for po in list_position:
+        if OrganizationUnitID in po["OrganizationUnitID"]:
+            list_results.append({
+            "key":po["_id"],
+            "display_name":po["JobPositionName"]
+        })
+    return send_result(data=list_results)

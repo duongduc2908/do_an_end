@@ -5,7 +5,7 @@
         <div>
           <el-input
             v-model="listQuery.text_search"
-            placeholder="Tim kiem ca lam viec"
+            placeholder="Tìm kiếm ca làm việc"
             style="width: 200px;"
             class="filter-item"
             @keyup.enter.native="handleFilter"
@@ -19,7 +19,7 @@
         icon="el-icon-search"
         @click="handleFilter"
       >
-        Search
+        Tìm kiếm
       </el-button>
       <el-button
         @click="handleaddShiftPlan"
@@ -28,7 +28,7 @@
         type="primary"
         icon="el-icon-edit"
       >
-        Add
+        Thêm mới
       </el-button>
     </div>
     <el-table
@@ -76,14 +76,14 @@
             Xem lich
           </el-button>
           <el-button type="primary" size="mini" @click="editShiftPlan(row)">
-            Edit
+            Sửa
           </el-button>
           <el-button
             size="mini"
             type="danger"
             @click="confirmDeleteShiftPlan(row, $index)"
           >
-            Delete
+            Xóa
           </el-button>
         </template>
       </el-table-column>
@@ -111,11 +111,11 @@
         style="margin:0 50px;"
       >
         <div>
-          <h2>Thong tin chung</h2>
+          <h2>Thông tin chung</h2>
         </div>
         <div class="flex">
           <div class="w-full">
-            <el-form-item label="Ten bang phan ca" prop="ShiftPlanName">
+            <el-form-item label="Tên bảng phân ca" prop="ShiftPlanName">
               <el-input v-model="detailDataX.ShiftPlanName" />
             </el-form-item>
           </div>
@@ -132,7 +132,7 @@
               multiple
               filterable
               default-first-option
-              placeholder="Chon danh sach ca"
+              placeholder="Chọn danh sách ca"
               style="width: 100%;"
             >
               <el-option
@@ -365,9 +365,9 @@
               >
                 <el-option
                   v-for="item in data_object"
-                  :key="item.value"
-                  :label="item.text"
-                  :value="item.value"
+                  :key="item.key"
+                  :label="item.display_name"
+                  :value="item.key"
                 >
                 </el-option>
               </el-select>
@@ -377,16 +377,16 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="success" @click="handleClickView"
-          ><span style="font-size:14px; "> Xem truoc</span></el-button
+          ><span style="font-size:14px; "> Xem trước</span></el-button
         >
         <el-button @click="dialogFormVisible = false">
           Huy
         </el-button>
         <el-button type="primary" @click="handleClickApply">
-          Them
+          Xac nhan
         </el-button>
       </div>
-      <div v-if="schedulerData && schedulerData.length">
+      <div v-if="schedulerData_Array && schedulerData_Array.length">
         <el-table
           :key="tableKey"
           v-loading="listLoading"
@@ -412,7 +412,7 @@
           :total="total"
           :page.sync="listQuery.page"
           :limit.sync="listQuery.limit"
-          @pagination="getList"
+          @pagination="handle_pagination"
         />
       </div>
     </el-dialog>
@@ -421,12 +421,6 @@
 <script>
 import moment from "moment";
 import Pagination from "@/components/Pagination"; // secondary package based on el-pagination
-const organization_unit = [
-  { value: "1", text: "Phong hanh chinh" },
-  { value: "2", text: "Phong phat trien phan mem" },
-  { value: "3", text: "Phong nghien cuu" },
-  { value: "4", text: "Phong kiem thu" }
-];
 export default {
   name: "ShiftPlan",
   components: { Pagination },
@@ -483,6 +477,7 @@ export default {
           }
         ]
       },
+      organization_unit:[],
       dialogFormVisible: false,
       listQuery: {
         page: 1,
@@ -616,12 +611,13 @@ export default {
       // Dữ liệu lịch
       listDayScheduler: [],
       listShiftScheduler: [],
-      schedulerData: [],
+      schedulerData_Array: [],
       showPreview: true,
       detailDataX: { ...this.detailData },
       validateStartTime: {},
       validateToTime: {},
       saveLoading: false,
+      schedulerData:[],
       total: 0
     };
   },
@@ -681,6 +677,12 @@ export default {
     this.getList();
   },
   methods: {
+    handle_pagination(){
+      let data_list = this.schedulerData_Array
+      console.log((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit));
+      console.log(parseInt(this.listQuery.page)*parseInt(this.listQuery.limit));
+      this.schedulerData = data_list.slice((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit),parseInt(this.listQuery.page)*parseInt(this.listQuery.limit));
+    },
     /**
      * Gán dữ liệu RepeatConfig cho các biến lưu giá trị lặp
      * Created by thduong 18/12/2020
@@ -747,31 +749,37 @@ export default {
       this.detailDataX.DateApplyType = parseInt(this.detailDataX.DateApplyType);
       this.convertRepeatConfig(this.detailDataX);
       this.dialogFormVisible = true;
-      this.schedulerData = [];
+      this.schedulerData_Array = [];
       this.object_apply_type();
     },
     confirmDeleteShiftPlan() {},
     handleaddShiftPlan() {
       // if(this.checkRolePermission("Add",this.subsystem_code)){
       this.detailDataX = {};
+      this.list_object_selected=null
       this.detailDataX.State = 1;
       this.dialogFormVisible = true;
+      this.objectApplyType = Boolean;
+      this.data_object = null
     },
     object_apply_type() {
       this.data_object = [];
       this.list_object_selected = [];
       let param = {};
       if (this.objectApplyType) {
+        debugger
         // this.detailDataX.ObjectType = 1;
+        this.$store.dispatch(`organization_unit/getList`).then(res =>{
+          this.data_object = res
+        })
         this.list_object_selected = this.detailDataX.OrganizationUnitIDs;
-        this.data_object = organization_unit;
       } else {
         this.list_object_selected = this.detailDataX.EmployeeIDs;
         this.$store.dispatch(`user/get_all_page_search`, param).then(res => {
           res.results.forEach(item => {
             this.data_object.push({
-              text: item.full_name,
-              value: item._id
+              display_name: item.full_name,
+              key: item._id
             });
           });
         });
@@ -880,13 +888,10 @@ export default {
         .then(res => {
           console.log(res);
         });
+      this.dialogFormVisible = false
+      this.getList();
     },
     handleClickView() {
-      // if (this.detailDataX.DateApplyType == "Tu ngay den ngay") {
-      //   this.detailDataX.DateApplyType = 1;
-      // } else {
-      //   this.detailDataX.DateApplyType = 2;
-      // }
       if (!this.objectApplyType) {
         this.detailDataX.OrganizationUnitNames = [];
         this.detailDataX.OrganizationUnitIDs = [];
@@ -925,7 +930,9 @@ export default {
           break;
       }
       this.createShiftPlan(this.detailDataX.RepeatType);
-      this.total = this.schedulerData.length;
+      this.generateSchedulerData()
+      this.schedulerData = this.schedulerData_Array.slice((parseInt(this.listQuery.page)-1)*parseInt(this.listQuery.limit),parseInt(this.listQuery.page)*parseInt(this.listQuery.limit))
+      this.total = this.schedulerData_Array.length;
     },
     /**
      * Hàm xử lý sự kiên bấm ÁP DỤNG
@@ -959,10 +966,10 @@ export default {
             default:
               break;
           }
-          // if (this.detailDataX.State != 2) {
-          //   this.addShiftPlan();
-          // }
-          if (this.detailDataX.State == 2) {
+          if (this.detailDataX.state != 2) {
+            this.addShiftPlan();
+          }
+          if (this.detailDataX.state == 2) {
             if (
               JSON.stringify(this.detailDataX) !=
               JSON.stringify(this.detailData)
@@ -973,11 +980,15 @@ export default {
                 title =
                   "Thoi gian phan ca da phat sinh du lieu cham cong.Ban co chac chan muon thay doi khong?";
               }
-              this.$_Popup.confirmUpdate(
-                "Cap nhap bang phan ca?",
-                title,
-                this.addShiftPlan
-              );
+              this.$confirm(`Ban co muon cap nhap bang phan ca ?`, 'Thong bao', {
+                confirmButtonText: 'Cap nhap',
+                cancelButtonText: 'Huy',
+                type: 'warning'
+              })
+                .then(async() => {
+                  await this.addShiftPlan()
+                })
+                .catch(err => { console.error(err) })
             } else this.backToTimeWorking();
           }
           this.createShiftPlan(this.detailDataX.RepeatType);
@@ -1058,17 +1069,22 @@ export default {
       // Lấy danh sách mã ca nếu chưa có
       if (this.detailDataX.WorkingShiftIDs.length > 0) {
         this.listShiftScheduler = [];
-        // this.detailDataX.WorkingShiftNames.forEach(element => {
-        //   this.listShiftScheduler.push(element);
-        // });
-        this.schedulerData = [];
+        this.list_object_selected.forEach(element => {
+          this.data_object.forEach(obj => {
+            if(obj.key == element){
+              this.listShiftScheduler.push(obj.display_name);
+            }
+          });
+          
+        });
+        this.schedulerData_Array = [];
         this.listShiftScheduler.forEach(el => {
           this.listDayScheduler.forEach(data => {
             let shift = {
               text: el,
               startDate: data
             };
-            this.schedulerData.push(shift);
+            this.schedulerData_Array.push(shift);
           });
         });
       } else {
@@ -1220,8 +1236,8 @@ export default {
           }
         }
       }
-      console.log(this.listDayScheduler);
-      this.generateSchedulerData();
+      // console.log(this.listDayScheduler);
+      // this.generateSchedulerData();
     },
     /**
      * Hàm check validate ngày bắt đầu lớn hơn ngày kết thúc
@@ -1285,5 +1301,8 @@ export default {
   .el-form-item__content {
     width: calc(100% - 12px) !important;
   }
+}
+.el-dialog {
+  margin-top: 10px !important;
 }
 </style>
