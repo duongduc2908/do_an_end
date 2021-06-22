@@ -14,3 +14,12 @@ export function get_list() {
     method: 'get'
   })
 }
+
+export function addTimeSheet(param) {
+  debugger
+  return request({
+    url: `time_sheet/${param.state == 1 ? 'create' : param.state == 2 ? 'update' : 'delete'}`,
+    method: 'post',
+    data:param
+  })
+}

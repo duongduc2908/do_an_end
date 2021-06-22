@@ -717,7 +717,7 @@ export default {
       // if (this.detailDataX.DateApplyType == 1) {
       //   this.detailDataX.DateApplyType = "Tu ngay den ngay";
       // } else {
-      //   this.detailDataX.DateApplyType = "Khong co ngay ket thuc";
+      //   this.detailDataX.DateApplyType = "Khong co ngay Kết thúc";
       // }
       if (this.detailDataX.state == 1) {
         this.detailDataX.WorkingShiftIDs = null;

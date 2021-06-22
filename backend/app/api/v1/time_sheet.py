@@ -19,74 +19,84 @@ api = Blueprint('time_sheet', __name__)
 def post():
     user_curr_id = get_jwt_identity()
     claims = get_jwt_claims()
-    days = ['Thu 2', 'Thu 3', 'Thu 4', 'Thu 5', 'Thu 6', 'Thu 7', 'Chu nhat']
+    days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật']
     if not claims['is_admin']:
         return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
     try:
         json_data = request.get_json()
         TimeSheetName = json_data.get('TimeSheetName')
         OrganizationUnitID = json_data.get('OrganizationUnitID')
-        OrganizationUnitName = json_data.get('OrganizationUnitName', None)
-        JobPositionIDs = json_data.get('JobPositionIDs', None)
-        JobPositionNames = json_data.get('JobPositionNames', None)
-        FromDate = json_data.get('FromDate', None)
-        ToDate = json_data.get('ToDate', None)
-        TimeSheetType = json_data.get('TimeSheetType', None)
-        IsUseBySummary = json_data.get('IsUseBySummary')
-        WorkCalculator = json_data.get('WorkCalculator', None)
-
+        JobPositionIDs = json_data.get('JobPositionIDs', "")
+        FromDate = json_data.get('FromDate', "")
+        ToDate = json_data.get('ToDate', "")
+        WorkCalculator = json_data.get('WorkCalculator', "")
+    
     except Exception as ex:
         print(ex)
         return send_error(message='Lỗi dữ liệu đầu vào')
-
+    og = client.db.organization_unit.find_one({"_id":OrganizationUnitID})
+    JobPositionNames=[]
+    for jb in JobPositionIDs:
+        jp = client.db.job_position.find_one({"_id":jb})
+        JobPositionNames.append(jp["JobPositionName"])
     _id = str(ObjectId())
     time_sheet = {
         '_id': _id,
         'TimeSheetName': TimeSheetName,
         'OrganizationUnitID': OrganizationUnitID,
-        'OrganizationUnitName': OrganizationUnitName,
+        'OrganizationUnitName': og["OrganizationUnitName"],
         'JobPositionIDs': JobPositionIDs,
         'JobPositionNames': JobPositionNames,
         'FromDate': FromDate,
         'ToDate': ToDate,
-        'TimeSheetType': TimeSheetType,
-        'IsUseBySummary': IsUseBySummary,
         'WorkCalculator': WorkCalculator,
         'ModifiedDate': "",
         'ModifiedBy':'',
         'CreateDate': datetime.today(),
         'CreateBy': claims['full_name']
     }
-    try:
-        client.db.time_sheet.insert_one(time_sheet)
-        FromDate = datetime.strptime(FromDate, '%Y-%m-%d')
-        ToDate = datetime.strptime(ToDate, '%Y-%m-%d')
-        ToDate = ToDate + timedelta(days=1)
-        
-        # print(int((ToDate-FromDate).days))
-        
-        day_type = ''
-        str_fillter_user = {"$and":[{ "JobPositionID": { "$in": JobPositionIDs } },{'OrganizationUnitID':OrganizationUnitID},{'ShiftPlanDay':{"$gte": FromDate , "$lt": ToDate }}]}
-        list_user_plan = list(client.db.shift_plan_employee.find(str_fillter_user))
-        if len(list_user_plan) >0:
-            for us_plan in list_user_plan:
-                totals_plan_day = 0
-                totals_check_days = 0
-                item = {}
-                item["_id"] = str(ObjectId())
-                item["TimeSheetID"] = _id
-                item["TimeSheetName"] = TimeSheetName
-                item["user_id"] = us_plan["user_id"]
-                item["user_fullname"] = us_plan["user_fullname"]
-                item["MaNV"] = us_plan["MaNV"]
-                item["OrganizationUnitID"] = us_plan["OrganizationUnitID"]
-                item["OrganizationUnitName"] = us_plan["OrganizationUnitName"]
-                item["JobPositionID"] = us_plan["JobPositionID"]
-                item["JobPositionName"] = us_plan["JobPositionName"]
-                for i in range(0,int((ToDate-FromDate).days)):
-                    item["Day{}".format(i+1)] = []
-                    date_check = FromDate+timedelta(i)
-                    date_check_end = FromDate+timedelta(i+1)
+    # try:
+    
+    FromDate = datetime.strptime(FromDate, '%Y-%m-%d')
+    ToDate = datetime.strptime(ToDate, '%Y-%m-%d')
+    ToDate = ToDate + timedelta(days=1)
+    
+    day_type = ''
+    str_fillter_user = {"$and":[{ "JobPositionID": { "$in": JobPositionIDs } },{'OrganizationUnitID':OrganizationUnitID},{'ShiftPlanDay':{"$gte": FromDate , "$lt": ToDate }}]}
+    list_user_plan = list(client.db.shift_plan_employee.find(str_fillter_user))
+    
+    
+    if len(list_user_plan) >0:
+        list_user_check = []
+        list_plan_day = {}
+        for us in list_user_plan:
+            if us["user_id"] not in list_user_check:
+                list_user_check.append(us["user_id"])
+                list_plan_day[us["user_id"]] = [{"ShiftPlanDay":us["ShiftPlanDay"],"WorkingShiftIDs":us["WorkingShiftIDs"]} ]
+            else:list_plan_day[us["user_id"]].append({"ShiftPlanDay":us["ShiftPlanDay"],"WorkingShiftIDs":us["WorkingShiftIDs"]})
+        for us_plan in list_user_check:
+            totals_plan_day = 0
+            totals_check_days = 0
+            item = {}
+            us_check =client.db.user.find_one({"_id":us_plan})
+            item["_id"] = str(ObjectId())
+            item["TimeSheetID"] = _id
+            item["TimeSheetName"] = TimeSheetName
+            item["user_id"] = us_check["_id"]
+            item["user_fullname"] = us_check["full_name"]
+            item["MaNV"] = us_check["MaNV"]
+            item["OrganizationUnitID"] = us_check["OrganizationUnitID"]
+            item["OrganizationUnitName"] = us_check["OrganizationUnitName"]
+            item["JobPositionID"] = us_check["JobPositionID"]
+            item["JobPositionName"] = us_check["JobPositionName"]
+            for i in range(0,int((ToDate-FromDate).days)):
+                item["Day{}".format(i+1)] = []
+                date_check = FromDate+timedelta(i)
+                date_check_end = FromDate+timedelta(i+1)
+                for plan_day in list_plan_day[us_plan]:
+                    date_plan = plan_day["ShiftPlanDay"].date()
+                    if not(date_plan == date_check.date()):
+                        continue
                     is_weekend = False
                     holidays_Vn = holidays.VNM() 
                     is_holiday = date_check.date() in holidays_Vn
@@ -105,7 +115,7 @@ def post():
                     number_penalty_hour_out = 0
                     total_working_day = 0
                     
-                    str_fillter_user = {"$and":[{ "_id": { "$in": us_plan["WorkingShiftIDs"] } }]}
+                    str_fillter_user = {"$and":[{ "_id": { "$in": plan_day["WorkingShiftIDs"] } }]}
                     working_shifts = list(client.db.working_shift.find(str_fillter_user))
                     
                     for wk in working_shifts:
@@ -120,45 +130,45 @@ def post():
                         t_end = datetime.strptime(wk["StartTimeInTo"], '%I:%M %p')
                         start_check_in = date_check +timedelta(hours=t_start.hour,minutes=t_start.minute)
                         end_check_in = date_check +timedelta(hours=t_end.hour,minutes=t_end.minute)
-                        str_fillter_user = {"$and":[{ "EmployeeID": us_plan["user_id"] },{ "OrganizationUnitID": us_plan["OrganizationUnitID"] },{ "JobPositionID": us_plan["JobPositionID"] },{"CheckTime":{"$gte": start_check_in , "$lte": end_check_in }}]}
+                        str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": start_check_in , "$lte": end_check_in }}]}
                         us_data_check_in = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",1).limit(1)
                         if us_data_check_in.count()==0:
                             if wk["CheckStartTime"] and wk["IsShowWithoutCheckin"]:
                                 number_penalty_day_in = wk["WorkingDayWithoutCheckin"]
                                 number_penalty_hour_in = wk["WorkingHourWithoutCheckin"]
-                            str_fillter_user = {"$and":[{ "EmployeeID": us_plan["user_id"] },{ "OrganizationUnitID": us_plan["OrganizationUnitID"] },{ "JobPositionID": us_plan["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
+                            str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
                             us_data_check_in = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",1)
                             if us_data_check_in.count()>0:
                                 us_data_check_in = list(us_data_check_in)[0]["CheckTime"]
                             else:us_data_check_in = None
                         else:
                             us_data_check_in = list(us_data_check_in)[0]["CheckTime"]
-                            print(us_data_check_in)
-                            print(i)
                         
                         t_start = datetime.strptime(wk["EndTimeInFrom"], '%I:%M %p')
                         t_end = datetime.strptime(wk["EndTimeInTo"], '%I:%M %p')
                         start_check_out = date_check +timedelta(hours=t_start.hour,minutes=t_start.minute)
                         end_check_out = date_check +timedelta(hours=t_end.hour,minutes=t_end.minute)
-                        str_fillter_user = {"$and":[{ "EmployeeID": us_plan["user_id"] },{ "OrganizationUnitID": us_plan["OrganizationUnitID"] },{ "JobPositionID": us_plan["JobPositionID"] },{"CheckTime":{"$gte": start_check_out , "$lte": end_check_out }}]}
+
+                        str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": start_check_out , "$lte": end_check_out }}]}
                         us_data_check_out = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",-1).limit(1)
                         if us_data_check_out.count()==0:
                             if wk["CheckStartTime"] and wk["IsShowWithoutCheckOut"]:
                                 number_penalty_day_out = wk["WorkingDayWithoutCheckOut"]
                                 number_penalty_hour_out = wk["WorkingHourWithoutCheckOut"]
-                            str_fillter_user = {"$and":[{ "EmployeeID": us_plan["user_id"] },{ "OrganizationUnitID": us_plan["OrganizationUnitID"] },{ "JobPositionID": us_plan["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
+                            str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
                             us_data_check_out = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",-1)
                             if us_data_check_out.count()>0:
                                 us_data_check_out = list(us_data_check_out)[0]["CheckTime"]
                             else:us_data_check_out = None
                         else:
                             us_data_check_out = list(us_data_check_out)[0]["CheckTime"]
+
+                            
                         if us_data_check_out == None and us_data_check_in==None:
-                            total_working_day = 0
-                            total_working_hour = 0
-                        else:
-                            total_working_day = (float(wk["WorkingDate"])-float(number_penalty_day_in)-float(number_penalty_day_out))*float(number_rate)
-                            total_working_hour = (float(wk["WorkingHour"])-float(number_penalty_hour_in)-float(number_penalty_hour_out))*float(number_rate)
+                            number_penalty_day_out = number_penalty_day_in = float(wk["WorkingDate"])/2
+                            number_penalty_hour_out = number_penalty_hour_in = float(wk["WorkingHour"])/2
+                        total_working_day = float(wk["WorkingDate"])*float(number_rate)-float(number_penalty_day_in)-float(number_penalty_day_out)
+                        total_working_hour = float(wk["WorkingHour"])*float(number_rate)-float(number_penalty_hour_in)-float(number_penalty_hour_out)
                         item["Day{}".format(i+1)].append({
                             "StartTime":wk["StartTime"],
                             "EndTime":wk["EndTime"],
@@ -174,23 +184,212 @@ def post():
                             "day_type":day_type,
                             "day":date_check.day,
                             "thu":days[date_check.weekday()],
-                            "check_in_date":date_check
+                            "check_in_date":date_check,
+                            "penalty_day_in":float(number_penalty_day_in),
+                            "penalty_day_out":float(number_penalty_day_out),
+                            "penalty_hour_in":float(number_penalty_hour_in),
+                            "penalty_hour_out":float(number_penalty_hour_out)
                             
                         })
                         totals_plan_day += float(wk["WorkingDate"])*float(number_rate)
                         totals_check_days+=total_working_day
-                print("oke")
-                item["totals_check_day"] = totals_check_days
-                item["totals_plan_day"] = totals_plan_day
-                client.db.time_sheet_detail.insert_one(item)
-            
-    except Exception as ex:
-        print(ex)
-        return send_error(message='có lỗi ngoại lệ xảy ra')
+            item["totals_check_day"] = totals_check_days
+            item["totals_plan_day"] = totals_plan_day
+            client.db.time_sheet_detail.insert_one(item)
+    client.db.time_sheet.insert_one(time_sheet)
     
     return send_result(data = '',message="Tạo user thành công ")
-        
 
+
+
+
+@api.route('/update', methods=['POST'])
+@jwt_required
+def Update():
+    user_curr_id = get_jwt_identity()
+    claims = get_jwt_claims()
+    days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật']
+    if not claims['is_admin']:
+        return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
+    try:
+        json_data = request.get_json()
+        _id = json_data.get('_id')
+        TimeSheetName = json_data.get('TimeSheetName')
+        OrganizationUnitID = json_data.get('OrganizationUnitID')
+        JobPositionIDs = json_data.get('JobPositionIDs', "")
+        FromDate = json_data.get('FromDate', "")
+        ToDate = json_data.get('ToDate', "")
+        WorkCalculator = json_data.get('WorkCalculator', "")
+    except Exception as ex:
+        print(ex)
+        return send_error()
+    client.db.time_sheet.delete_one({'_id': _id})
+    client.db.time_sheet_detail.delete_many({'TimeSheetID': _id})
+    og = client.db.organization_unit.find_one({"_id":OrganizationUnitID})
+    JobPositionNames=[]
+    for jb in JobPositionIDs:
+        jp = client.db.job_position.find_one({"_id":jb})
+        JobPositionNames.append(jp["JobPositionName"])
+    _id = str(ObjectId())
+    time_sheet = {
+        '_id': _id,
+        'TimeSheetName': TimeSheetName,
+        'OrganizationUnitID': OrganizationUnitID,
+        'OrganizationUnitName': og["OrganizationUnitName"],
+        'JobPositionIDs': JobPositionIDs,
+        'JobPositionNames': JobPositionNames,
+        'FromDate': FromDate,
+        'ToDate': ToDate,
+        'WorkCalculator': WorkCalculator,
+        'ModifiedDate': "",
+        'ModifiedBy':'',
+        'CreateDate': datetime.today(),
+        'CreateBy': claims['full_name']
+    }
+    # try:
+    
+    FromDate = datetime.strptime(FromDate, '%Y-%m-%d')
+    ToDate = datetime.strptime(ToDate, '%Y-%m-%d')
+    ToDate = ToDate + timedelta(days=1)
+    
+    day_type = ''
+    str_fillter_user = {"$and":[{ "JobPositionID": { "$in": JobPositionIDs } },{'OrganizationUnitID':OrganizationUnitID},{'ShiftPlanDay':{"$gte": FromDate , "$lt": ToDate }}]}
+    list_user_plan = list(client.db.shift_plan_employee.find(str_fillter_user))
+    
+    
+    if len(list_user_plan) >0:
+        list_user_check = []
+        list_plan_day = {}
+        for us in list_user_plan:
+            if us["user_id"] not in list_user_check:
+                list_user_check.append(us["user_id"])
+                list_plan_day[us["user_id"]] = [{"ShiftPlanDay":us["ShiftPlanDay"],"WorkingShiftIDs":us["WorkingShiftIDs"]} ]
+            else:list_plan_day[us["user_id"]].append({"ShiftPlanDay":us["ShiftPlanDay"],"WorkingShiftIDs":us["WorkingShiftIDs"]})
+        for us_plan in list_user_check:
+            totals_plan_day = 0
+            totals_check_days = 0
+            item = {}
+            us_check =client.db.user.find_one({"_id":us_plan})
+            item["_id"] = str(ObjectId())
+            item["TimeSheetID"] = _id
+            item["TimeSheetName"] = TimeSheetName
+            item["user_id"] = us_check["_id"]
+            item["user_fullname"] = us_check["full_name"]
+            item["MaNV"] = us_check["MaNV"]
+            item["OrganizationUnitID"] = us_check["OrganizationUnitID"]
+            item["OrganizationUnitName"] = us_check["OrganizationUnitName"]
+            item["JobPositionID"] = us_check["JobPositionID"]
+            item["JobPositionName"] = us_check["JobPositionName"]
+            for i in range(0,int((ToDate-FromDate).days)):
+                item["Day{}".format(i+1)] = []
+                date_check = FromDate+timedelta(i)
+                date_check_end = FromDate+timedelta(i+1)
+                for plan_day in list_plan_day[us_plan]:
+                    date_plan = plan_day["ShiftPlanDay"].date()
+                    if not(date_plan == date_check.date()):
+                        continue
+                    is_weekend = False
+                    holidays_Vn = holidays.VNM() 
+                    is_holiday = date_check.date() in holidays_Vn
+                    if not is_holiday:
+                        week_no = date_check.weekday()
+                        day_type="Ngay trong tuan"
+                        if week_no>5:
+                            is_weekend = True
+                            day_type="Ngay cuoi tuan"
+                    else:
+                        day_type = "Ngay le"
+                    number_rate = 0
+                    number_penalty_day_in = 0
+                    number_penalty_hour_in = 0
+                    number_penalty_day_out = 0
+                    number_penalty_hour_out = 0
+                    total_working_day = 0
+                    
+                    str_fillter_user = {"$and":[{ "_id": { "$in": plan_day["WorkingShiftIDs"] } }]}
+                    working_shifts = list(client.db.working_shift.find(str_fillter_user))
+                    
+                    for wk in working_shifts:
+                        if is_holiday:
+                            number_rate = wk["WorkingRateHoliday"]
+                        elif is_weekend:
+                            number_rate = wk["WorkingRateWeekend"]
+                        else:
+                            number_rate = wk["WorkingRateWeekday"]
+                            
+                        t_start = datetime.strptime(wk["StartTimeInFrom"], '%I:%M %p')
+                        t_end = datetime.strptime(wk["StartTimeInTo"], '%I:%M %p')
+                        start_check_in = date_check +timedelta(hours=t_start.hour,minutes=t_start.minute)
+                        end_check_in = date_check +timedelta(hours=t_end.hour,minutes=t_end.minute)
+                        str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": start_check_in , "$lte": end_check_in }}]}
+                        us_data_check_in = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",1).limit(1)
+                        if us_data_check_in.count()==0:
+                            if wk["CheckStartTime"] and wk["IsShowWithoutCheckin"]:
+                                number_penalty_day_in = wk["WorkingDayWithoutCheckin"]
+                                number_penalty_hour_in = wk["WorkingHourWithoutCheckin"]
+                            str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
+                            us_data_check_in = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",1)
+                            if us_data_check_in.count()>0:
+                                us_data_check_in = list(us_data_check_in)[0]["CheckTime"]
+                            else:us_data_check_in = None
+                        else:
+                            us_data_check_in = list(us_data_check_in)[0]["CheckTime"]
+                        
+                        t_start = datetime.strptime(wk["EndTimeInFrom"], '%I:%M %p')
+                        t_end = datetime.strptime(wk["EndTimeInTo"], '%I:%M %p')
+                        start_check_out = date_check +timedelta(hours=t_start.hour,minutes=t_start.minute)
+                        end_check_out = date_check +timedelta(hours=t_end.hour,minutes=t_end.minute)
+
+                        str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": start_check_out , "$lte": end_check_out }}]}
+                        us_data_check_out = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",-1).limit(1)
+                        if us_data_check_out.count()==0:
+                            if wk["CheckStartTime"] and wk["IsShowWithoutCheckOut"]:
+                                number_penalty_day_out = wk["WorkingDayWithoutCheckOut"]
+                                number_penalty_hour_out = wk["WorkingHourWithoutCheckOut"]
+                            str_fillter_user = {"$and":[{ "EmployeeID": us_check["_id"] },{ "OrganizationUnitID": us_check["OrganizationUnitID"] },{ "JobPositionID": us_check["JobPositionID"] },{"CheckTime":{"$gte": date_check , "$lt": date_check_end }}]}
+                            us_data_check_out = client.db.timekeeper_data.find(str_fillter_user).sort("CheckTime",-1)
+                            if us_data_check_out.count()>0:
+                                us_data_check_out = list(us_data_check_out)[0]["CheckTime"]
+                            else:us_data_check_out = None
+                        else:
+                            us_data_check_out = list(us_data_check_out)[0]["CheckTime"]
+
+                            
+                        if us_data_check_out == None and us_data_check_in==None:
+                            number_penalty_day_out = number_penalty_day_in = float(wk["WorkingDate"])/2
+                            number_penalty_hour_out = number_penalty_hour_in = float(wk["WorkingHour"])/2
+                        total_working_day = float(wk["WorkingDate"])*float(number_rate)-float(number_penalty_day_in)-float(number_penalty_day_out)
+                        total_working_hour = float(wk["WorkingHour"])*float(number_rate)-float(number_penalty_hour_in)-float(number_penalty_hour_out)
+                        item["Day{}".format(i+1)].append({
+                            "StartTime":wk["StartTime"],
+                            "EndTime":wk["EndTime"],
+                            "CheckStartTime":us_data_check_in,
+                            "CheckEndTime":us_data_check_out,
+                            "WorkingShiftCode":wk["WorkingShiftCode"],
+                            "WorkingShiftName":wk["WorkingShiftName"],
+                            "WorkingShiftID":wk["_id"],
+                            "Working_days":total_working_day,
+                            "Working_hours":total_working_hour,
+                            "Working_plan_day": wk["WorkingDate"],
+                            "Working_plan_hour": wk["WorkingHour"],
+                            "day_type":day_type,
+                            "day":date_check.day,
+                            "thu":days[date_check.weekday()],
+                            "check_in_date":date_check,
+                            "penalty_day_in":float(number_penalty_day_in),
+                            "penalty_day_out":float(number_penalty_day_out),
+                            "penalty_hour_in":float(number_penalty_hour_in),
+                            "penalty_hour_out":float(number_penalty_hour_out)
+                            
+                        })
+                        totals_plan_day += float(wk["WorkingDate"])*float(number_rate)
+                        totals_check_days+=total_working_day
+            item["totals_check_day"] = totals_check_days
+            item["totals_plan_day"] = totals_plan_day
+            client.db.time_sheet_detail.insert_one(item)
+    client.db.time_sheet.insert_one(time_sheet)
+    
+    return send_result(data = '',message="Sua bang luong thành công ")
 """
 Function: Get all page
 Input: 
@@ -234,3 +433,21 @@ def get_all_page_search():
         'results': list_time_sheet
     }
     return send_result(data=data)
+
+
+@api.route('/delete', methods=['POST'])
+@jwt_required
+def Delete():
+    user_curr_id = get_jwt_identity()
+    claims = get_jwt_claims()
+    if not claims['is_admin']:
+        return send_error(message="Bạn không đủ quyền để thực hiện thao tác này")
+    try:
+        json_data = request.get_json()
+        _id = json_data.get('_id')
+    except Exception as ex:
+        print(ex)
+        return send_error()
+    client.db.time_sheet.delete_one({'_id': _id})
+    client.db.time_sheet_detail.delete_many({'TimeSheetID': _id})
+    return send_result()

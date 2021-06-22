@@ -46,6 +46,9 @@ def post():
         group_role_id = json_data.get('group_role_id', None)
         IsTrain = json_data.get('IsTrain', None)
         list_role_id = json_data.get('list_role_id', None)
+        commune = json_data.get('commune', '')
+        district = json_data.get('district', '')
+        provincial = json_data.get('provincial', '')
         password = "123456a@"
 
     except Exception as ex:
@@ -87,7 +90,10 @@ def post():
         'status':1,
         'group_role_id':group_role_id,
         'IsTrain': IsTrain,
-        'list_role_id':list_role_id
+        'list_role_id':list_role_id,
+        'commune':commune,
+        'district': district,
+        'provincial':provincial
     }
     try:
         client.db.user.insert_one(user)
@@ -139,6 +145,9 @@ def put():
         link_Avatar_old = json_data.get('link_Avatar_old', "None")
         IsTrain = json_data.get('IsTrain', None)
         list_role_id = json_data.get('list_role_id', None)
+        commune = json_data.get('commune', '')
+        district = json_data.get('district', '')
+        provincial = json_data.get('provincial', '')
     except Exception as e:
         print(e)
         return send_error(message='Lỗi dữ liệu đầu vào')
@@ -158,7 +167,7 @@ def put():
             'email': email,
             'OrganizationUnitID': OrganizationUnitID,
             'OrganizationUnitName': OrganizationUnitName,
-            'JobPositionName': JobPositionID,
+            'JobPositionID': JobPositionID,
             'JobPositionName': JobPositionName,
             'HireDate': HireDate,
             'ReceiveDate': ReceiveDate,
@@ -175,7 +184,10 @@ def put():
             'status':status,
             'group_role_id':group_role_id,
             'IsTrain':IsTrain,
-            'list_role_id':list_role_id
+            'list_role_id':list_role_id,
+            'commune':commune,
+            'district': district,
+            'provincial':provincial
         }}
     try:
         client.db.user.update_one({'_id': user_id}, new_user)

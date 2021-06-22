@@ -62,7 +62,6 @@
             value-format="yyyy-MM-dd hh:mm"
           />
           <el-button
-            v-waves
             class="filter-item"
             type="primary"
             icon="el-icon-search"

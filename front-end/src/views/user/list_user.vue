@@ -82,7 +82,6 @@
       </div>
 
       <el-button
-        v-waves
         class="filter-item"
         type="primary"
         icon="el-icon-search"
@@ -101,7 +100,6 @@
         Thêm mới
       </el-button>
       <el-button
-        v-waves
         :loading="downloadLoading"
         class="filter-item"
         type="primary"
@@ -174,7 +172,7 @@
       <el-table-column
         v-if="showJobPosition"
         label="Vị trí"
-        width="150px"
+        width="153px"
         align="center"
       >
         <template slot-scope="{ row }">
@@ -184,7 +182,7 @@
       <el-table-column
         v-if="showOgUnit"
         label="Phòng ban"
-        width="150px"
+        width="250px"
         align="center"
       >
         <template slot-scope="{ row }">
@@ -283,6 +281,58 @@
             </el-form-item>
             <el-form-item label="Địa chỉ " prop="Address">
               <el-input v-model="temp.Address" />
+            </el-form-item>
+            <el-form-item label="Tỉnh TP">
+              <el-select
+                class="filter-item"
+                placeholder="Chọn tỉnh TP"
+                filterable
+                default-first-option
+                v-model="temp.provincial"
+                @change="getDistrict"
+              >
+                <el-option
+                  v-for="item in list_provincial[0]"
+                  :key="item.code"
+                  :label="item.name"
+                  :value="item.code"
+                  
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Quận huyện">
+              <el-select
+                class="filter-item"
+                placeholder="Chọn quận huyện"
+                filterable
+                default-first-option
+                v-model="temp.district"
+                @change="getCommune"
+              >
+                <el-option
+                  v-for="item in list_district[0]"
+                  :key="item.code"
+                  :label="item.name"
+                  :value="item.code"
+                  
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Xã phường">
+              <el-select
+                class="filter-item"
+                placeholder="Chọn xã phường"
+                filterable
+                default-first-option
+                v-model="temp.commune"
+              >
+                <el-option
+                  v-for="item in list_commune[0]"
+                  :key="item.code"
+                  :label="item.name"
+                  :value="item.code"
+                />
+              </el-select>
             </el-form-item>
           </div>
           <div>
@@ -482,12 +532,12 @@
 
 <script>
 import { fetchPv, updateArticle } from "@/api/article";
-import waves from "@/directive/waves"; // waves directive
+
 import { parseTime } from "@/utils";
 import Pagination from "@/components/Pagination"; // secondary package based on el-pagination
 import checkRolePermission from "@/utils/permission";
 import UploadImageTrain from "@/views/user/UploadImageTrain";
-
+import axios from 'axios'
 const GenderList = [
   { key: "0", display_name: "Nữ" },
   { key: "1", display_name: "Nam" }
@@ -495,7 +545,6 @@ const GenderList = [
 export default {
   name: "ComplexTable",
   components: { Pagination, UploadImageTrain },
-  directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -582,7 +631,10 @@ export default {
         link_Avatar_old: "",
         Gender: "",
         group_role_id: "",
-        list_role_id: ""
+        list_role_id: "",
+        commune:"",
+        district:"",
+        provincial:"",
       },
       dialogFormVisible: false,
       dialogStatus: "",
@@ -653,6 +705,7 @@ export default {
   created() {
     this.getList();
     this.getPermission();
+    this.getProvincial();
   },
   methods: {
     closeDialog() {
@@ -826,6 +879,7 @@ export default {
         this.src = "http://localhost:4321/avatar/default_avatar.png";
         this.temp.state = 1;
         this.dialogFormVisible = true;
+        this.job_position = []
       // this.list_roles=[]
       }
     },
@@ -834,10 +888,10 @@ export default {
       // this.list_roles = []
       if(this.checkRolePermission("Edit",this.subsystem_code)){
         this.temp = Object.assign({}, data); // copy obj
-        // if(this.temp.list_roles){
-        //   this.list_roles = this.temp.list_roles
+        if(this.temp.OrganizationUnitID){
+          this.click_Organization(this.temp.OrganizationUnitID,true)
 
-        // };
+        };
         this.src = this.temp.Avatar;
         this.file = null;
         this.temp.state = 2;
@@ -957,16 +1011,17 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
-    click_Organization(data){
-      debugger
+    click_Organization(data,edit=false){
       let param = {
         "OrganizationUnitID":data
       }
-       this.$store.dispatch(`job_position/getByOg`,param).then(res =>{
-        console.log(res)
+      this.$store.dispatch(`job_position/getByOg`,param).then(res =>{
+        debugger
         this.job_position = res
       })
-      this.temp.JobPositionID =""
+      if(!edit){
+        this.temp.JobPositionID =""
+      }
     },
     updateData() {
       this.$refs["dataForm"].validate(valid => {
@@ -1042,7 +1097,7 @@ export default {
         this.list_provincial = [];
         return;
       }
-      axios.get("assets/dist/tinh_tp.json").then(data => {
+      axios.get('tinh_tp.json').then(data => {
         this.list_provincial = Object.keys(data).map(key => data[key]).sort(function (a, b) {
           if (a.name < b.name) { return -1; }
           if (a.name > b.name) { return 1; }
@@ -1051,11 +1106,12 @@ export default {
       })
     },
     getDistrict(value){
+      debugger
       if(!value){
         this.list_district = [];
         return;
       }
-      axios.get(`assets/dist/quan-huyen/${value}.json`).then(data => {
+      axios.get(`quan-huyen/${value}.json`).then(data => {
         this.list_district = Object.keys(data).map(key => data[key]).sort(function (a, b) {
           if (a.name < b.name) { return -1; }
           if (a.name > b.name) { return 1; }
@@ -1069,7 +1125,7 @@ export default {
         this.list_commune = [];
         return;
       }
-      axios.get(`assets/dist/xa-phuong/${value}.json`).then(data => {
+      axios.get(`xa-phuong/${value}.json`).then(data => {
         this.list_commune = Object.keys(data).map(key => data[key]).sort(function (a, b) {
           if (a.name < b.name) { return -1; }
           if (a.name > b.name) { return 1; }

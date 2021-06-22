@@ -1,4 +1,4 @@
-import { get_all_page_search,get_list } from '@/api/timesheet_detail'
+import { get_all_page_search,get_list,addTimeSheet } from '@/api/timesheet_detail'
 
 
 const mutations = {
@@ -19,6 +19,16 @@ const actions = {
   async get_list (context, payload) {
     return new Promise((resolve, reject) => {
       get_list(payload).then(response => {
+        const { data } = response
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  async addTimeSheet (context, payload) {
+    return new Promise((resolve, reject) => {
+      addTimeSheet(payload).then(response => {
         const { data } = response
         resolve(data)
       }).catch(error => {
